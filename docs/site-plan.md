@@ -57,7 +57,7 @@ Supporting benefits (outcomes):
 | | English | Français |
 |-|-|-|
 | Headline | Fair tickets. Honest resale. No fakes at the door. | Billets justes. Revente honnête. Aucun faux à l'entrée. |
-| Subheadline | NFTokenPass issues each ticket as a token in the fan's wallet. The organizer's rules travel with it: a resale cap, a royalty on every resale, and an entry code a screenshot can't pass. | NFTokenPass émet chaque billet comme un jeton dans le portefeuille du fan. Les règles de l'organisateur le suivent partout : un prix de revente plafonné, une redevance sur chaque revente et un code d'entrée qu'aucune capture d'écran ne peut déjouer. |
+| Subheadline | Each ticket is a token in the fan's wallet, carrying the organizer's rules: capped resale, royalties, and a code screenshots can't pass. | Chaque billet est un jeton dans le portefeuille du fan, avec les règles de l'organisateur : revente plafonnée, redevances et un code qu'aucune capture ne déjoue. |
 | Primary CTA | Open the box office → `/app` | Ouvrir la billetterie → `/app` |
 | Secondary CTA | How a ticket works → `/how-it-works` | Comment fonctionne un billet → `/how-it-works` |
 
@@ -71,18 +71,18 @@ All routes live under `/en/…` and `/fr/…`; `/` redirects to the visitor's pr
 
 | Route | Purpose | Sections, in order |
 |-|-|-|
-| `/` (home) | Explain the product in one scroll and send people into the box office. | 1. Hero with the live ticket. 2. "What goes wrong today" strip: three short failures of classic ticketing (fakes, scalped resale, organizers cut out). 3. "One ticket, three people": Fan / Organizer / Door, each with a small product vignette (wallet ticket, royalty ledger line, door stamp) and a link into that part of the demo. 4. The resale rail: an interactive price rail capped at 110 % with the live receipt split (the signature moment, reused from the app). 5. Photo band (crowd) with a line about the night itself. 6. For organizers: marquee photo, the rules you set once, and what the contract enforces. 7. FAQ (6 questions). 8. Closing call to action. |
+| `/` (home) | Explain the product in one scroll and send people into the box office. Four sections after the hero (restraint rules). | 1. Hero with the live ticket and its life strip. 2. "One ticket, three people": Fan / Organizer / Door, each a one-line card with a product vignette (wallet ticket, royalty ledger lines, door stamps) and a link into that part of the demo. 3. The resale rail: an interactive price rail capped at 110 % with the live receipt split (the signature moment, reused from the app). 4. For organizers: marquee photo, one line, link to create an event. 5. Closing call to action on marquee yellow, with the crowd photo. |
 | `/app` | Box office: the interactive demo's home. Upcoming events, search and category filter, wallet connection, role tabs (Fan, Door, Organizer). | App bar (connect wallet, balance, network, demo controls), role tabs, events grid, empty and loading states. |
 | `/app/events/[id]` | An event: buy a primary ticket, or buy a capped resale listing. | Event header (cover, date, venue, rules), tier picker with quantity and per-wallet limit, checkout panel with totals and the testnet notice, resale listings, transaction feedback. |
 | `/app/wallet` | The fan's wallet: tickets, entry codes, resale listings, souvenirs, activity. | Tickets (with "Show entry code", "Resell", "Cancel listing"), listing panel with the price rail and receipt, souvenirs grid, activity list with pending, confirmed and failed transactions. |
 | `/app/door` | Door scanner for tonight's show. | Event selector, viewfinder, arrivals queue (simulated guests), "Scan my own ticket", manual code entry, result stamp, admitted and refused counters and log. |
 | `/app/organizer` | Organizer console: your events, sales and royalties; create a new event. | Event list with sold/supply, primary revenue and resale royalties; "Create event" form (details, tiers, rules) with a live ticket preview; deploy transaction feedback. |
-| `/how-it-works` | For organizers and developers weighing the trust model: what the contract enforces, what is on-chain versus off-chain, and why the entry code can't be copied. **Justified** because the rules are the product; the home page can only state them. | 1. The life of a ticket (5-step diagram). 2. The rules, one by one (cap, royalty, limit, souvenir). 3. Why a screenshot fails (rotating signed code, diagram). 4. On-chain vs off-chain table. 5. Technical FAQ. 6. Call to action. |
+| `/how-it-works` | For organizers and developers weighing the trust model: what the contract enforces, what is on-chain versus off-chain, and why the entry code can't be copied. **Justified** because the rules are the product; the home page can only state them. | 1. The life of a ticket (5 perforated stubs). 2. The four rules, each with a worked example. 3. Why a screenshot fails (20-second window diagram + four refusal cases). 4. On-chain vs off-chain table. 5. FAQ (5 questions; the site's only FAQ). 6. Call to action. |
 | `/credits` | Photo credits required by the asset rules. Linked from the footer. | Photo list with photographer links, type and icon credits. |
 | `/pricing` | Internal strategy review only. **Never linked**, excluded from the sitemap, `noindex, nofollow`. | Model summary, three plans, reasoning, comparison with incumbents. |
 | 404 | Not found, per locale. | A "VOID" stub with links back. |
 
-**Header** (sticky): NFTokenPass wordmark · links: Box office (`/app`), How it works (`/how-it-works`) · EN/FR switch · theme toggle · primary action "Open the box office" (on marketing pages). Mobile: wordmark + menu button opening a sheet with the links, switches and action. Inside `/app`, the page adds an app bar with the connect-wallet control, the "Demo · simulated data" badge and demo controls.
+**Header** (sticky, the only top bar on marketing pages): NFTokenPass wordmark · links: Box office (`/app`), How it works (`/how-it-works`) · "Demo · simulated data" chip · EN/FR switch · theme toggle · primary action "Open the box office" (on marketing pages). Mobile: wordmark + menu button opening a sheet with the links, switches and action. Inside `/app`, the page adds an app bar with the connect-wallet control, the "Demo · simulated data" badge and demo controls.
 
 **Footer**: one-line description; links: Box office, How it works, Credits; project page on monark.io and GitHub repo; "Demo · simulated data"; "Built with Monark" credit (muted, 12–13px, links to monark.io). No `/pricing` link anywhere.
 
@@ -152,32 +152,30 @@ All visible strings live in `src/i18n/dictionaries/en.ts` and `fr.ts`; the table
 
 | Section | English | Français |
 |-|-|-|
-| Eyebrow | Ticketing for independent venues and promoters | La billetterie des salles et promoteurs indépendants |
-| Problem heading | Three things classic ticketing gets wrong | Trois choses que la billetterie classique rate |
-| Problem 1 | **Fakes at the door.** A PDF or a screenshot can be sold ten times. The first one in wins; the other nine are turned away. | **Des faux à l'entrée.** Un PDF ou une capture peut être vendu dix fois. Le premier arrivé passe, les neuf autres restent dehors. |
-| Problem 2 | **Resale as a bidding war.** A sold-out show reappears at four times the price, minutes after going on sale. | **La revente aux enchères.** Un spectacle complet réapparaît à quatre fois le prix, quelques minutes après l'ouverture des ventes. |
-| Problem 3 | **Organizers cut out.** The markup goes to resellers. The artist and the venue see none of it. | **Les organisateurs écartés.** La marge va aux revendeurs. L'artiste et la salle n'en voient pas un sou. |
 | Three people heading | One ticket. Three people it has to work for. | Un billet. Trois personnes à satisfaire. |
-| Fan | **The fan** buys a real ticket, keeps it in a wallet, and can pass it on at a fair price. | **Le fan** achète un vrai billet, le garde dans son portefeuille et peut le céder à un prix juste. |
-| Organizer | **The organizer** sets the rules once. Every resale pays a royalty back, automatically. | **L'organisateur** fixe les règles une fois. Chaque revente lui verse une redevance, automatiquement. |
-| Door | **The door** scans a code that changes every 20 seconds. Copies fail; real guests walk in. | **L'entrée** scanne un code qui change toutes les 20 secondes. Les copies échouent, les vrais invités passent. |
-| Resale rail heading | Resale, with a ceiling | La revente, avec un plafond |
-| Resale rail body | Drag the price. It stops at the cap the organizer set, and the receipt shows who gets what. | Faites glisser le prix. Il s'arrête au plafond fixé par l'organisateur, et le reçu montre qui touche quoi. |
-| Photo line | The night is for the crowd, not for the resellers. | La soirée appartient au public, pas aux revendeurs. |
-| Organizers heading | Set your rules once. The contract keeps them. | Fixez vos règles une fois. Le contrat s'en charge. |
-| Organizers body | Resale cap, royalty, a limit per wallet and a souvenir for everyone who came. You choose them when you create the event; every sale and resale after that follows them, wherever the ticket goes. | Plafond de revente, redevance, limite par portefeuille et souvenir pour chaque personne présente. Vous les choisissez à la création de l'événement; chaque vente et revente les respecte ensuite, où que le billet aille. |
-| Closing | **Walk through a show from both sides of the door.** Buy a ticket, resell it, scan it in. Everything is simulated, nothing is charged. · CTA: Open the box office | **Vivez un spectacle des deux côtés de la porte.** Achetez un billet, revendez-le, scannez-le. Tout est simulé, rien n'est facturé. · CTA : Ouvrir la billetterie |
+| Fan | **The fan** buys a real ticket, keeps it in a wallet, and can pass it on at a fair price. · Buy a ticket | **Le fan** achète un vrai billet, le garde dans son portefeuille et peut le céder à un prix juste. · Acheter un billet |
+| Organizer | **The organizer** sets the rules once. Every resale pays a royalty back, automatically. · Open the organizer console | **L'organisateur** fixe les règles une fois. Chaque revente lui verse une redevance, automatiquement. · Ouvrir la console organisateur |
+| Door | **The door** scans a code that changes every 20 seconds. Copies fail; real guests walk in. · Work the door | **L'entrée** scanne un code qui change toutes les 20 secondes. Les copies échouent, les vrais invités passent. · Tenir la porte |
+| Resale rail | **Resale, with a ceiling.** Drag the price. It stops at the cap the organizer set, and the receipt shows who gets what. | **La revente, avec un plafond.** Faites glisser le prix. Il s'arrête au plafond fixé par l'organisateur, et le reçu montre qui touche quoi. |
+| Organizers | **Set your rules once. The contract keeps them.** Resale cap, royalty, per-wallet limit, souvenir: chosen once, enforced on every sale. · Create an event in the demo | **Fixez vos règles une fois. Le contrat s'en charge.** Plafond, redevance, limite par portefeuille, souvenir : choisis une fois, appliqués à chaque vente. · Créer un événement dans la démo |
+| Closing | **The night is for the crowd, not the resellers.** Buy a ticket, resell it, scan it in. Nothing is charged. · Open the box office | **La soirée appartient au public, pas aux revendeurs.** Achetez un billet, revendez-le, scannez-le. Rien n'est facturé. · Ouvrir la billetterie |
 
-**FAQ (home)**
+### How it works (excerpt)
+
+| Section | English | Français |
+|-|-|-|
+| Title | The rules are the product. What the ticket contract enforces, and why a copied code is refused at the door. | Les règles sont le produit. Ce que le contrat des billets applique, et pourquoi un code copié est refusé à l'entrée. |
+| Code | **Why a screenshot fails.** Every 20 seconds the wallet signs a new code. The door accepts only the current one, signed by today's holder. | **Pourquoi une capture d'écran échoue.** Toutes les 20 secondes, le portefeuille signe un nouveau code. La porte n'accepte que le code en cours, signé par le détenteur actuel. |
+
+**FAQ (on /how-it-works only, 5 questions)**
 
 | English | Français |
 |-|-|
-| **Do fans need to know anything about crypto?** No. In a real launch, a wallet is created at checkout with an email; this demo simulates it with one click. | **Les fans doivent-ils connaître la crypto?** Non. Lors d'un vrai lancement, un portefeuille est créé au paiement avec un courriel; cette démo le simule en un clic. |
-| **What stops someone from screenshotting the ticket?** The entry code changes every 20 seconds and is signed by the wallet holding the ticket. An old code, or a code from someone who sold the ticket on, is refused. | **Qu'est-ce qui empêche une capture d'écran?** Le code d'entrée change toutes les 20 secondes et il est signé par le portefeuille qui détient le billet. Un vieux code, ou celui d'une personne qui a revendu son billet, est refusé. |
-| **Can fans still resell?** Yes, up to the cap the organizer set (for example 110 % of face value). The contract won't accept a higher price. | **Les fans peuvent-ils revendre?** Oui, jusqu'au plafond fixé par l'organisateur (par exemple 110 % du prix initial). Le contrat refuse tout prix supérieur. |
-| **How does the organizer earn from resale?** A royalty set at creation (say 5 %) is paid by the contract in the same transaction as each resale. | **Comment l'organisateur touche-t-il sur la revente?** Une redevance fixée à la création (disons 5 %) est versée par le contrat dans la même transaction que chaque revente. |
-| **What happens if the door has no signal?** The check only needs the code and the event's public data, which the door app keeps offline; it syncs "used" tickets when the signal returns. | **Et si l'entrée n'a pas de réseau?** La vérification n'a besoin que du code et des données publiques de l'événement, que l'appli de contrôle garde hors ligne; elle synchronise les billets utilisés au retour du réseau. |
-| **Is this live?** No. This is a demo on simulated testnet data. Nothing is charged and no real tickets are sold. | **Est-ce en service?** Non. C'est une démo sur des données de testnet simulées. Rien n'est facturé et aucun vrai billet n'est vendu. |
+| **Do fans need to know anything about crypto?** No. In a real launch a wallet is created at checkout with an email. This demo simulates it in one click. | **Les fans doivent-ils connaître la crypto?** Non. Lors d'un vrai lancement, un portefeuille est créé au paiement avec un courriel. Cette démo le simule en un clic. |
+| **What if the door has no signal?** The check needs only the code and the event's public data, kept offline. Used tickets sync when the signal returns. | **Et si l'entrée n'a pas de réseau?** La vérification n'a besoin que du code et des données publiques de l'événement, gardées hors ligne. Les billets utilisés se synchronisent ensuite. |
+| **Can a fan get around the cap?** Paid transfers go through the capped marketplace. Off-platform deals leave the buyer with a code only the seller can sign. | **Un fan peut-il contourner le plafond?** Les transferts payants passent par le marché plafonné. Un arrangement hors plateforme laisse l'acheteur avec un code que seul le vendeur peut signer. |
+| **What if a fan loses their phone?** They sign in on another device and the ticket is there. The old phone's codes stop working when they rotate. | **Et si un fan perd son téléphone?** Il se connecte sur un autre appareil et retrouve son billet. Les codes de l'ancien téléphone cessent de fonctionner dès qu'ils changent. |
+| **Which standard do tickets use?** One ERC-721 collection per event, with transfer hooks for the cap and the royalty. Here it is simulated; nothing is deployed. | **Quelle norme les billets utilisent-ils?** Une collection ERC-721 par événement, avec des crochets de transfert pour le plafond et la redevance. Ici, tout est simulé. |
 
 ### App (main strings)
 
@@ -255,7 +253,7 @@ The ticket object keeps its yellow card stock in both themes (ink `#1C1814` on `
 
 **Type.** Two families via `next/font/google`:
 
-- **Big Shoulders Display** (700, 800): a condensed face drawn from Chicago's signage and marquees. Headlines, ticket serials, stamps, big numbers. Uppercase for stamps and eyebrows, tight tracking.
+- **Big Shoulders** (variable, optical size set to display): a condensed face drawn from Chicago's signage and marquees. Headlines, ticket serials, stamps, big numbers. Uppercase for stamps and eyebrows, tight tracking.
 - **Instrument Sans** (400, 500, 600, 700): a clear, slightly warm grotesk for body, UI and forms.
 
 Scale (rem, mobile → desktop): display 3.0 → 5.25 (Big Shoulders 800, line-height 0.92); h1 2.5 → 3.75; h2 2.0 → 2.75; h3 1.375 → 1.625; body 1.0 (line-height 1.6); small 0.875; micro/labels 0.75 uppercase with 0.08em tracking. Numbers use tabular figures.
@@ -280,7 +278,7 @@ Scale (rem, mobile → desktop): display 3.0 → 5.25 (Big Shoulders 800, line-h
 
 | File | Purpose | Placement |
 |-|-|-|
-| `public/images/crowd.jpg` | The night itself: hands up under warm stage light (Tijs van Leur) | Home, photo band ("The night is for the crowd…") |
+| `public/images/crowd.jpg` | The night itself: hands up under warm stage light (Tijs van Leur) | Home, closing call to action ("The night is for the crowd…") |
 | `public/images/marquee.jpg` | The venue: a lit theatre marquee at night (Artur Ament) | Home, "For organizers" section |
 
 **Built in code:** the ticket component (hero, wallet, previews, Open Graph), stamps (ADMITTED, VOID, LISTED, SOLD, SOUVENIR), the entry-code matrix (deterministic, not a real QR), the door viewfinder, the resale rail and receipt, the ticket-life diagram and the code-rotation diagram on `/how-it-works`, event cover "posters" (typographic, per-event colour), the 404 VOID stub.
@@ -310,6 +308,15 @@ Why these numbers: on a 45 $ ticket, Pay as you sell costs the organizer 0.93 $ 
 - No marketplace beyond capped resale of a show's own tickets (no auctions, no bids, no cross-event trading).
 - No dynamic artwork beyond the ticket's own states (on sale → in wallet → listed → used → souvenir).
 - No analytics, cookies or tracking.
+
+## Restraint pass (owner feedback)
+
+After the first build, the owner asked every site to carry less text. What was cut:
+
+- Home: the "three things classic ticketing gets wrong" band, the separate photo band, the four rule cards under "For organizers", the home FAQ and the hero eyebrow and caption. The home page now has four sections after the hero, the closing call to action included.
+- How it works: every body cut to one short line; the FAQ lives only here (5 questions).
+- App: the testnet notice appears once per transaction, in the wallet prompt, and no longer under every button; removed the roles hint, the entry-code explainer, the resell explainer and fee line, the "bypass" hint, and the hints under every rule slider. The app bar keeps one Testnet chip and the demo controls; the "Demo · simulated data" chip sits in the header, and the footer keeps the notice.
+- Toasts sit bottom-left on desktop and just under the header on phones, so they never cover the inline result they duplicate.
 
 ## Decisions made while working unattended
 
