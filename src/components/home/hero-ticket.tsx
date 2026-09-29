@@ -22,7 +22,7 @@ interface Props {
   labels: TicketLabels & { entryCode: string; codeRotates: string; life: string }
   rules: TicketRuleValues
   steps: { label: string; tone: StampTone }[]
-  caption: string
+  caption?: string
 }
 
 /** The hero's live ticket: the entry code rotates, and the ticket walks through its life every few seconds. */
@@ -77,7 +77,7 @@ export function HeroTicket({ ticket, labels, rules, steps, caption }: Props) {
             </li>
           ))}
         </ol>
-        <p className="text-sm text-muted-foreground">{caption}</p>
+        {caption && <p className="text-sm text-muted-foreground">{caption}</p>}
       </figcaption>
     </figure>
   )

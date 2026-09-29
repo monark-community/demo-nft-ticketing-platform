@@ -84,7 +84,7 @@ const fr: Dictionary = {
     eyebrow: "La billetterie des salles et promoteurs indépendants",
     title: "Billets justes. Revente honnête. Aucun faux à l'entrée.",
     subtitle:
-      "NFTokenPass émet chaque billet comme un jeton dans le portefeuille du fan. Les règles de l'organisateur le suivent partout : un prix de revente plafonné, une redevance sur chaque revente et un code d'entrée qu'aucune capture d'écran ne peut déjouer.",
+      "Chaque billet est un jeton dans le portefeuille du fan, avec les règles de l'organisateur : revente plafonnée, redevances et un code qu'aucune capture ne déjoue.",
     ctaPrimary: "Ouvrir la billetterie",
     ctaSecondary: "Comment fonctionne un billet",
     heroCaption: "Un billet vivant. Son code d'entrée change toutes les 20 secondes.",
@@ -150,7 +150,7 @@ const fr: Dictionary = {
     organizers: {
       eyebrow: "Pour les organisateurs",
       title: "Fixez vos règles une fois. Le contrat s'en charge.",
-      body: "Plafond de revente, redevance, limite par portefeuille et souvenir pour chaque personne présente. Vous les choisissez à la création de l'événement; chaque vente et revente les respecte ensuite, où que le billet aille.",
+      body: "Plafond, redevance, limite par portefeuille, souvenir : choisis une fois, appliqués à chaque vente.",
       alt: "La marquise d'un théâtre illuminée en rouge et or, la nuit",
       points: [
         { title: "Plafond de revente", body: "Du prix initial jusqu'à 150 %. Le contrat refuse toute mise en vente au-delà." },
@@ -190,8 +190,8 @@ const fr: Dictionary = {
       ],
     },
     closing: {
-      title: "Vivez un spectacle des deux côtés de la porte.",
-      body: "Achetez un billet, revendez-le, scannez-le. Tout est simulé, rien n'est facturé.",
+      title: "La soirée appartient au public, pas aux revendeurs.",
+      body: "Achetez un billet, revendez-le, scannez-le. Rien n'est facturé.",
       cta: "Ouvrir la billetterie",
     },
   },
@@ -210,100 +210,156 @@ const fr: Dictionary = {
     increase: "Monter le prix",
   },
   how: {
-    metaTitle: "Fonctionnement",
-    metaDescription:
-      "Ce que le contrat de billets NFTokenPass applique : plafond de revente, redevances, limite par portefeuille, souvenirs et un code d'entrée qu'une capture d'écran ne peut pas déjouer.",
-    eyebrow: "Fonctionnement",
-    title: "Les règles sont le produit",
-    intro:
-      "Sur NFTokenPass, un billet est un jeton auquel sont rattachées les règles de son événement. Voici ce que le contrat applique, ce qui reste hors chaîne, et pourquoi un code copié est refusé à l'entrée.",
-    life: {
-      title: "La vie d'un billet",
-      steps: [
-        { title: "Créé", body: "L'organisateur déploie l'événement avec ses catégories et ses règles. Elles ne changent plus pour les billets déjà vendus." },
-        { title: "Acheté", body: "Le billet est émis dans le portefeuille du fan au prix initial, dans la limite par portefeuille." },
-        { title: "Revendu, peut-être", body: "Le détenteur peut le mettre en vente au plafond ou en dessous. L'acheteur paie; la redevance et le vendeur sont réglés d'un coup." },
-        { title: "Scanné", body: "À l'entrée, le portefeuille affiche un code signé qui change. La porte le vérifie et marque le billet comme utilisé." },
-        { title: "Conservé", body: "Le billet utilisé devient un souvenir qui prouve la présence." },
+    "metaTitle": "Fonctionnement",
+    "metaDescription": "Ce que le contrat de billets NFTokenPass applique : plafond de revente, redevances, limite par portefeuille, souvenirs et un code d'entrée qu'aucune capture ne déjoue.",
+    "title": "Les règles sont le produit",
+    "intro": "Ce que le contrat des billets applique, et pourquoi un code copié est refusé à l'entrée.",
+    "life": {
+      "title": "La vie d'un billet",
+      "steps": [
+        {
+          "title": "Créé",
+          "body": "L'organisateur déploie l'événement, ses catégories et ses règles."
+        },
+        {
+          "title": "Acheté",
+          "body": "Émis dans le portefeuille du fan au prix initial, dans la limite permise."
+        },
+        {
+          "title": "Revendu",
+          "body": "Mis en vente sous le plafond. Redevance et vendeur réglés d'un coup."
+        },
+        {
+          "title": "Scanné",
+          "body": "La porte vérifie un code signé qui change, puis marque le billet utilisé."
+        },
+        {
+          "title": "Conservé",
+          "body": "Le billet utilisé devient un souvenir, preuve de présence."
+        }
+      ]
+    },
+    "rules": {
+      "title": "Quatre règles, fixées une fois",
+      "items": [
+        {
+          "title": "Plafond de revente",
+          "body": "Un prix de revente maximal, de 100 % à 150 % du prix initial. Au-delà, refusé.",
+          "example": "42,00 × 110 % = max. 46,20"
+        },
+        {
+          "title": "Redevance",
+          "body": "De 0 % à 10 % de chaque revente, versés à l'organisateur dans la même transaction.",
+          "example": "46,20 × 5 % = 2,31"
+        },
+        {
+          "title": "Limite par portefeuille",
+          "body": "Combien de billets un portefeuille peut détenir pour l'événement. Freine les robots.",
+          "example": "Limite 4 → 5e refusé"
+        },
+        {
+          "title": "Souvenir",
+          "body": "Un objet de collection émis au détenteur quand le billet est scanné.",
+          "example": "Scanné à 20 h 14 → souvenir"
+        }
+      ]
+    },
+    "code": {
+      "title": "Pourquoi une capture d'écran échoue",
+      "body": "Toutes les 20 secondes, le portefeuille signe un nouveau code. La porte n'accepte que le code en cours, signé par le détenteur actuel.",
+      "cases": [
+        {
+          "title": "Capture d'écran",
+          "body": "Fenêtre passée : expiré."
+        },
+        {
+          "title": "Billet revendu",
+          "body": "Signé par l'ancien détenteur."
+        },
+        {
+          "title": "Déjà entré",
+          "body": "Utilisé, avec l'heure."
+        },
+        {
+          "title": "Mauvais soir",
+          "body": "Valide, mais pour un autre événement."
+        }
       ],
+      "windowLabel": "Fenêtres de 20 secondes",
+      "now": "maintenant",
+      "accepted": "accepté",
+      "refused": "refusé"
     },
-    rules: {
-      title: "Quatre règles, fixées une fois",
-      items: [
-        {
-          title: "Plafond de revente",
-          body: "Un prix de revente maximal, en pourcentage du prix initial (de 100 % à 150 %). Le contrat du marché refuse toute annonce au-delà : aucune porte dérobée.",
-          example: "Prix 42,00 · plafond 110 % → max. 46,20",
-        },
-        {
-          title: "Redevance",
-          body: "Une part de chaque revente (de 0 % à 10 %) versée à l'organisateur dans la même transaction que la vente. Ni facture ni rapprochement.",
-          example: "Revente 46,20 · redevance 5 % → 2,31 à l'organisateur",
-        },
-        {
-          title: "Limite par portefeuille",
-          body: "Le nombre maximal de billets qu'un portefeuille peut détenir pour l'événement, achats et reventes compris. Elle freine les robots et les achats en gros.",
-          example: "Limite 4 → un cinquième billet est refusé",
-        },
-        {
-          title: "Souvenir",
-          body: "Quand un billet est scanné à l'entrée, un objet de collection est émis au détenteur : une preuve de présence qui pourra débloquer des avantages.",
-          example: "Scanné à 20 h 14 → souvenir 0388",
-        },
+    "split": {
+      "title": "On-chain, ou pas",
+      "headers": [
+        "",
+        "On-chain",
+        "Hors chaîne"
       ],
+      "rows": [
+        [
+          "Propriété",
+          "Jeton dans le portefeuille du détenteur",
+          ""
+        ],
+        [
+          "Règles",
+          "Dans le contrat de l'événement",
+          ""
+        ],
+        [
+          "Revente et redevance",
+          "Une seule transaction",
+          ""
+        ],
+        [
+          "Utilisé / non utilisé",
+          "Inscrit à l'entrée",
+          "En cache sur les appareils de la porte"
+        ],
+        [
+          "Visuels, descriptions",
+          "",
+          "Stockés hors chaîne"
+        ],
+        [
+          "Noms, courriels, cartes",
+          "",
+          "Jamais on-chain"
+        ]
+      ]
     },
-    code: {
-      title: "Pourquoi une capture d'écran échoue",
-      body: "Le portefeuille n'affiche pas un code-barres fixe. Toutes les 20 secondes, il signe un nouveau code qui combine le billet, le portefeuille du détenteur et la fenêtre de temps. La porte n'accepte qu'un code de la fenêtre en cours, signé par la personne qui détient le billet à cet instant.",
-      cases: [
-        { title: "Capture d'écran", body: "Signée dans une fenêtre passée : refusée, code expiré." },
-        { title: "Billet revendu", body: "Signé par l'ancien détenteur : refusé, pas le détenteur." },
-        { title: "Déjà entré", body: "Billet marqué utilisé : refusé, avec l'heure d'entrée." },
-        { title: "Mauvais soir", body: "Billet valide pour un autre événement : refusé, avec le bon événement." },
-      ],
-      windowLabel: "Fenêtres de 20 secondes",
-      now: "maintenant",
-      accepted: "accepté",
-      refused: "refusé",
-    },
-    split: {
-      title: "Ce qui est on-chain, et ce qui ne l'est pas",
-      headers: ["", "On-chain", "Hors chaîne"],
-      rows: [
-        ["Propriété du billet", "Oui : un jeton dans le portefeuille du détenteur", ""],
-        ["Règles (plafond, redevance, limite)", "Oui : dans le contrat de l'événement", ""],
-        ["Revente et versement de la redevance", "Oui : une seule transaction", ""],
-        ["Utilisé / non utilisé", "Oui : inscrit par le contrôle à l'entrée", "Mis en cache sur les appareils de la porte, pour scanner hors ligne"],
-        ["Visuels et descriptions", "", "Stockés hors chaîne, référencés par le contrat"],
-        ["Noms, courriels, cartes de paiement", "", "Jamais on-chain"],
-      ],
-    },
-    faq: {
-      title: "Questions techniques",
-      items: [
+    "faq": {
+      "title": "Questions",
+      "items": [
         {
-          q: "Quelle norme les billets utilisent-ils?",
-          a: "Une collection ERC-721 par événement, avec des crochets de transfert qui font passer chaque transfert par le marché plafonné et versent la redevance. Cette démo le simule; aucun contrat n'est déployé.",
+          "q": "Les fans doivent-ils connaître la crypto?",
+          "a": "Non. Lors d'un vrai lancement, un portefeuille est créé au paiement avec un courriel. Cette démo le simule en un clic."
         },
         {
-          q: "Un fan peut-il contourner le plafond en vendant hors du marché?",
-          a: "Les transferts directs entre portefeuilles ne sont permis que pour offrir un billet, sans prix. Un paiement hors plateforme reste possible, mais l'acheteur détient alors un billet dont seul le vendeur peut signer le code jusqu'au transfert : exactement ce que les fans apprennent à éviter.",
+          "q": "Et si l'entrée n'a pas de réseau?",
+          "a": "La vérification n'a besoin que du code et des données publiques de l'événement, gardées hors ligne. Les billets utilisés se synchronisent ensuite."
         },
         {
-          q: "Combien de temps prend un contrôle à l'entrée?",
-          a: "La vérification de la signature et du détenteur se fait localement, en bien moins d'une seconde; la mention « utilisé » s'inscrit en arrière-plan.",
+          "q": "Un fan peut-il contourner le plafond?",
+          "a": "Les transferts payants passent par le marché plafonné. Un arrangement hors plateforme laisse l'acheteur avec un code que seul le vendeur peut signer."
         },
         {
-          q: "Et si un fan perd son téléphone?",
-          a: "Avec un portefeuille lié à un courriel, il se connecte sur un autre appareil et retrouve son billet. Les codes de l'ancien appareil cessent d'être valides dès qu'ils changent.",
+          "q": "Et si un fan perd son téléphone?",
+          "a": "Il se connecte sur un autre appareil et retrouve son billet. Les codes de l'ancien téléphone cessent de fonctionner dès qu'ils changent."
         },
-      ],
+        {
+          "q": "Quelle norme les billets utilisent-ils?",
+          "a": "Une collection ERC-721 par événement, avec des crochets de transfert pour le plafond et la redevance. Ici, tout est simulé."
+        }
+      ]
     },
-    cta: {
-      title: "Voyez chaque règle en action",
-      body: "Achetez, revendez, puis scannez le même billet à l'entrée.",
-      button: "Ouvrir la billetterie",
-    },
+    "cta": {
+      "title": "Voyez chaque règle en action",
+      "body": "Achetez, revendez, puis scannez le même billet.",
+      "button": "Ouvrir la billetterie"
+    }
   },
   credits: {
     metaTitle: "Crédits",
@@ -317,7 +373,7 @@ const fr: Dictionary = {
     type: "Big Shoulders et Instrument Sans, via Google Fonts. Icônes de Lucide.",
     license: "Licence Unsplash",
     photos: {
-      crowd: { alt: "Un fan les bras levés dans un concert, projecteurs en arrière-plan", usedOn: "Accueil, bandeau photo" },
+      crowd: { alt: "Un fan les bras levés dans un concert, projecteurs en arrière-plan", usedOn: "Accueil, appel à l'action final" },
       marquee: { alt: "La marquise du Metro Theatre illuminée la nuit", usedOn: "Accueil, « Pour les organisateurs »" },
     },
   },
@@ -419,6 +475,15 @@ const fr: Dictionary = {
       confirmed: "Confirmée",
       failed: "Échouée",
       hash: "Transaction",
+      short: {
+        rejected: "Refusée dans le portefeuille",
+        network: "Erreur réseau",
+        aboveCap: "Au-dessus du plafond de revente",
+        insufficient: "Solde tUSDC insuffisant",
+        limit: "Limite par portefeuille atteinte",
+        soldOut: "Complet",
+        gone: "Plus disponible",
+      },
       kinds: {
         connect: "Portefeuille connecté",
         faucet: "200,00 tUSDC de test reçus",

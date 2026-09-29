@@ -373,7 +373,7 @@ export async function deployEvent(draft: EventDraft, summary: TxSummary): Promis
 /* --------------------------------------------------------------------- door */
 
 /** The code a queued guest shows, generated at scan time from their scenario. */
-export function guestCode(s: DemoState, g: Guest, now: number): string {
+export function guestCode(s: DemoState, g: Guest, now = Date.now()): string {
   const t = s.tickets.find((x) => x.id === g.ticketId)
   if (!t) return `NTP-9999-${"ABCDEF"}`
   switch (g.scenario) {
@@ -390,6 +390,11 @@ export function guestCode(s: DemoState, g: Guest, now: number): string {
     default:
       return entryCode(t, t.owner, now)
   }
+}
+
+/** The code your wallet shows right now for one of your tickets. */
+export function currentCode(t: Ticket, now = Date.now()): string {
+  return entryCode(t, t.owner, now)
 }
 
 export interface ScanResult {

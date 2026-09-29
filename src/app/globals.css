@@ -184,7 +184,7 @@
 }
 
 /* Flat "stacked paper" depth: a hard offset, never a blur. */
-@utility paper {
+@utility paper-edge {
   box-shadow: 0 2px 0 var(--paper-shadow);
 }
 

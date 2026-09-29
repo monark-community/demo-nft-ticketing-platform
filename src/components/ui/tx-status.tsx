@@ -28,7 +28,7 @@ const statusConfig: Record<
   confirmed: {
     icon: CheckCircle2Icon,
     label: "Confirmed",
-    tone: "text-emerald-600 dark:text-emerald-400",
+    tone: "text-success",
   },
   failed: {
     icon: XCircleIcon,

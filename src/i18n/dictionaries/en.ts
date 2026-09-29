@@ -82,7 +82,7 @@ const en = {
     eyebrow: "Ticketing for independent venues and promoters",
     title: "Fair tickets. Honest resale. No fakes at the door.",
     subtitle:
-      "NFTokenPass issues each ticket as a token in the fan's wallet. The organizer's rules travel with it: a resale cap, a royalty on every resale, and an entry code a screenshot can't pass.",
+      "Each ticket is a token in the fan's wallet, carrying the organizer's rules: capped resale, royalties, and a code screenshots can't pass.",
     ctaPrimary: "Open the box office",
     ctaSecondary: "How a ticket works",
     heroCaption: "A live ticket. Its entry code rotates every 20 seconds.",
@@ -148,7 +148,7 @@ const en = {
     organizers: {
       eyebrow: "For organizers",
       title: "Set your rules once. The contract keeps them.",
-      body: "Resale cap, royalty, a limit per wallet and a souvenir for everyone who came. You choose them when you create the event; every sale and resale after that follows them, wherever the ticket goes.",
+      body: "Resale cap, royalty, per-wallet limit, souvenir: chosen once, enforced on every sale.",
       alt: "A theatre marquee lit in red and gold at night",
       points: [
         { title: "Resale cap", body: "From face value up to 150 %. The contract refuses any listing above it." },
@@ -188,8 +188,8 @@ const en = {
       ],
     },
     closing: {
-      title: "Walk through a show from both sides of the door.",
-      body: "Buy a ticket, resell it, scan it in. Everything is simulated, nothing is charged.",
+      title: "The night is for the crowd, not the resellers.",
+      body: "Buy a ticket, resell it, scan it in. Nothing is charged.",
       cta: "Open the box office",
     },
   },
@@ -208,100 +208,156 @@ const en = {
     increase: "Raise the price",
   },
   how: {
-    metaTitle: "How it works",
-    metaDescription:
-      "What the NFTokenPass ticket contract enforces: resale caps, royalties, per-wallet limits, souvenirs, and an entry code that a screenshot can't pass.",
-    eyebrow: "How it works",
-    title: "The rules are the product",
-    intro:
-      "A ticket on NFTokenPass is a token with its event's rules attached. Here is what the contract enforces, what stays off-chain, and why a copied code gets refused at the door.",
-    life: {
-      title: "The life of a ticket",
-      steps: [
-        { title: "Created", body: "The organizer deploys the event with its tiers and rules. They can't be changed for tickets already sold." },
-        { title: "Bought", body: "The ticket is minted into the fan's wallet at face value, within the per-wallet limit." },
-        { title: "Resold, maybe", body: "The holder can list it at or below the cap. The buyer pays; the organizer's royalty and the seller are paid in one step." },
-        { title: "Scanned", body: "At the door, the wallet shows a rotating signed code. The door checks it and marks the ticket used." },
-        { title: "Kept", body: "The used ticket becomes a souvenir that proves attendance." },
+    "metaTitle": "How it works",
+    "metaDescription": "What the NFTokenPass ticket contract enforces: resale caps, royalties, per-wallet limits, souvenirs, and an entry code a screenshot can't pass.",
+    "title": "The rules are the product",
+    "intro": "What the ticket contract enforces, and why a copied code is refused at the door.",
+    "life": {
+      "title": "The life of a ticket",
+      "steps": [
+        {
+          "title": "Created",
+          "body": "The organizer deploys the event, its tiers and its rules."
+        },
+        {
+          "title": "Bought",
+          "body": "Minted into the fan's wallet at face value, within the per-wallet limit."
+        },
+        {
+          "title": "Resold",
+          "body": "Listed at or under the cap. Royalty and seller are paid in one step."
+        },
+        {
+          "title": "Scanned",
+          "body": "The door checks a rotating signed code and marks the ticket used."
+        },
+        {
+          "title": "Kept",
+          "body": "The used ticket becomes a souvenir that proves attendance."
+        }
+      ]
+    },
+    "rules": {
+      "title": "Four rules, set once",
+      "items": [
+        {
+          "title": "Resale cap",
+          "body": "A maximum resale price, 100 % to 150 % of face. Listings above it are refused.",
+          "example": "42.00 × 110 % = max 46.20"
+        },
+        {
+          "title": "Royalty",
+          "body": "0 % to 10 % of every resale, paid to the organizer in the same transaction.",
+          "example": "46.20 × 5 % = 2.31"
+        },
+        {
+          "title": "Per-wallet limit",
+          "body": "How many tickets one wallet may hold for the event. Slows bots.",
+          "example": "Limit 4 → 5th refused"
+        },
+        {
+          "title": "Souvenir",
+          "body": "A collectible minted to the holder when the ticket is scanned in.",
+          "example": "Scanned 20:14 → souvenir"
+        }
+      ]
+    },
+    "code": {
+      "title": "Why a screenshot fails",
+      "body": "Every 20 seconds the wallet signs a new code. The door accepts only the current one, signed by today's holder.",
+      "cases": [
+        {
+          "title": "Screenshot",
+          "body": "Old window: expired."
+        },
+        {
+          "title": "Sold on",
+          "body": "Signed by the previous holder."
+        },
+        {
+          "title": "Already in",
+          "body": "Used, with the time."
+        },
+        {
+          "title": "Wrong night",
+          "body": "Valid, but for another event."
+        }
       ],
+      "windowLabel": "20-second windows",
+      "now": "now",
+      "accepted": "accepted",
+      "refused": "refused"
     },
-    rules: {
-      title: "Four rules, set once",
-      items: [
-        {
-          title: "Resale cap",
-          body: "A maximum resale price, as a percentage of face value (100 % to 150 %). The marketplace contract rejects any listing above it, so there is no side door.",
-          example: "Face 42.00 · cap 110 % → max 46.20",
-        },
-        {
-          title: "Royalty",
-          body: "A share of every resale (0 % to 10 %) paid to the organizer in the same transaction as the sale. No invoices, no reconciliation.",
-          example: "Resale 46.20 · royalty 5 % → 2.31 to the organizer",
-        },
-        {
-          title: "Per-wallet limit",
-          body: "The maximum number of tickets one wallet can hold for the event, counted across purchases and resales. It slows bots and bulk buyers.",
-          example: "Limit 4 → a fifth ticket is refused",
-        },
-        {
-          title: "Souvenir",
-          body: "When a ticket is scanned in, a collectible is minted to the holder: proof of attendance that can unlock perks later.",
-          example: "Scanned at 20:14 → souvenir 0388",
-        },
+    "split": {
+      "title": "On-chain, and off",
+      "headers": [
+        "",
+        "On-chain",
+        "Off-chain"
       ],
+      "rows": [
+        [
+          "Ownership",
+          "Token in the holder's wallet",
+          ""
+        ],
+        [
+          "Rules",
+          "In the event contract",
+          ""
+        ],
+        [
+          "Resale and royalty",
+          "One transaction",
+          ""
+        ],
+        [
+          "Used / not used",
+          "Set at check-in",
+          "Cached on door devices"
+        ],
+        [
+          "Artwork, descriptions",
+          "",
+          "Stored off-chain"
+        ],
+        [
+          "Names, emails, cards",
+          "",
+          "Never on-chain"
+        ]
+      ]
     },
-    code: {
-      title: "Why a screenshot fails",
-      body: "The wallet doesn't show a fixed barcode. Every 20 seconds it signs a new code that combines the ticket, the holder's wallet and the time window. The door accepts only a code from the current window, signed by whoever holds the ticket right now.",
-      cases: [
-        { title: "Screenshot", body: "Signed in an old window: refused as expired." },
-        { title: "Sold on", body: "Signed by the previous holder: refused, not the holder." },
-        { title: "Already in", body: "Ticket marked used: refused, with the time it was used." },
-        { title: "Wrong night", body: "Valid ticket for another event: refused, with the right event." },
-      ],
-      windowLabel: "20-second windows",
-      now: "now",
-      accepted: "accepted",
-      refused: "refused",
-    },
-    split: {
-      title: "What is on-chain, and what isn't",
-      headers: ["", "On-chain", "Off-chain"],
-      rows: [
-        ["Ticket ownership", "Yes: a token in the holder's wallet", ""],
-        ["Rules (cap, royalty, limit)", "Yes: in the event contract", ""],
-        ["Resale and royalty payment", "Yes: one transaction", ""],
-        ["Used / not used", "Yes: set by the door's check-in", "Cached on door devices for offline scanning"],
-        ["Event artwork, descriptions", "", "Stored off-chain, referenced by the contract"],
-        ["Names, emails, payment cards", "", "Never on-chain"],
-      ],
-    },
-    faq: {
-      title: "Technical questions",
-      items: [
+    "faq": {
+      "title": "Questions",
+      "items": [
         {
-          q: "Which standard do tickets use?",
-          a: "An ERC-721 collection per event, with transfer hooks that route every transfer through the capped marketplace and pay the royalty. This demo simulates it; no contract is deployed.",
+          "q": "Do fans need to know anything about crypto?",
+          "a": "No. In a real launch a wallet is created at checkout with an email. This demo simulates it in one click."
         },
         {
-          q: "Can a fan get around the cap by selling outside the marketplace?",
-          a: "Direct transfers between wallets are allowed only for gifts at no price. Money changing hands off-platform is possible, but the buyer then holds a ticket whose entry code only the seller can sign until the transfer happens, which is exactly what fans learn to avoid.",
+          "q": "What if the door has no signal?",
+          "a": "The check needs only the code and the event's public data, kept offline. Used tickets sync when the signal returns."
         },
         {
-          q: "How fast is a check at the door?",
-          a: "Verifying a signature and the holder is done locally in well under a second; the \"used\" mark is written in the background.",
+          "q": "Can a fan get around the cap?",
+          "a": "Paid transfers go through the capped marketplace. Off-platform deals leave the buyer with a code only the seller can sign."
         },
         {
-          q: "What if a fan loses their phone?",
-          a: "With an email-based wallet, they sign in on another device and their ticket is there. The old device's codes stop being valid as soon as they rotate.",
+          "q": "What if a fan loses their phone?",
+          "a": "They sign in on another device and the ticket is there. The old phone's codes stop working when they rotate."
         },
-      ],
+        {
+          "q": "Which standard do tickets use?",
+          "a": "One ERC-721 collection per event, with transfer hooks for the cap and the royalty. Here it is simulated; nothing is deployed."
+        }
+      ]
     },
-    cta: {
-      title: "See every rule in action",
-      body: "Buy, resell, then scan the same ticket at the door.",
-      button: "Open the box office",
-    },
+    "cta": {
+      "title": "See every rule in action",
+      "body": "Buy, resell, then scan the same ticket.",
+      "button": "Open the box office"
+    }
   },
   credits: {
     metaTitle: "Credits",
@@ -315,7 +371,7 @@ const en = {
     type: "Big Shoulders and Instrument Sans, via Google Fonts. Icons by Lucide.",
     license: "Unsplash License",
     photos: {
-      crowd: { alt: "A fan with arms raised at a concert, stage lights behind", usedOn: "Home page, photo band" },
+      crowd: { alt: "A fan with arms raised at a concert, stage lights behind", usedOn: "Home page, closing call to action" },
       marquee: { alt: "The Metro Theatre marquee lit up at night", usedOn: "Home page, “For organizers”" },
     },
   },
@@ -416,6 +472,15 @@ const en = {
       confirmed: "Confirmed",
       failed: "Failed",
       hash: "Transaction",
+      short: {
+        rejected: "Rejected in wallet",
+        network: "Network error",
+        aboveCap: "Above the resale cap",
+        insufficient: "Not enough tUSDC",
+        limit: "Per-wallet limit reached",
+        soldOut: "Sold out",
+        gone: "No longer available",
+      },
       kinds: {
         connect: "Wallet connected",
         faucet: "Received 200.00 test tUSDC",

@@ -27,10 +27,14 @@ export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary 
         </div>
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden items-center gap-2 md:flex">
+            <span className="hidden items-center gap-1.5 rounded-sm border border-dashed border-input px-2 py-1 text-xs font-medium text-muted-foreground lg:inline-flex">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
+              {c.demoBadge}
+            </span>
             <LocaleSwitch locale={locale} label={c.languageLabel} names={c.languageNames} short={c.languageShort} />
             <ThemeToggle label={c.themeToggle} />
           </div>
-          <HeaderAction href={href(locale, "/app")} label={c.openBoxOffice} demoLabel={c.demoBadge} />
+          <HeaderAction href={href(locale, "/app")} label={c.openBoxOffice} />
           <MobileMenu
             locale={locale}
             items={items}
