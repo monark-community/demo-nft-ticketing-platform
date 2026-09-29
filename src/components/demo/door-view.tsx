@@ -205,8 +205,16 @@ export function DoorView() {
                       </span>
                       {g.name}
                     </span>
-                    <Button variant="ghost" size="sm" className="h-9 pointer-coarse:h-11" disabled={busy} onClick={() => scanGuest(g.id)}>
-                      {t(x.scanGuest, { name: g.name })}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-9 pointer-coarse:size-11"
+                      disabled={busy}
+                      onClick={() => scanGuest(g.id)}
+                      aria-label={t(x.scanGuest, { name: g.name })}
+                      title={t(x.scanGuest, { name: g.name })}
+                    >
+                      <ScanLineIcon aria-hidden="true" />
                     </Button>
                   </li>
                 ))}

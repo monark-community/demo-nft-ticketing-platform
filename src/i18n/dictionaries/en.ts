@@ -606,7 +606,7 @@ const en = {
     },
     door: {
       title: "Door",
-      intro: "Check tickets at the entrance. Each guest shows a code from their wallet; you get a verdict and the reason in about a second.",
+      intro: "Scan each guest's code. Verdict and reason in about a second.",
       event: "Event",
       admitted: "Admitted",
       refused: "Refused",

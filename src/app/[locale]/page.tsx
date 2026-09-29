@@ -43,7 +43,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <section className="border-b">
         <Container className="grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-24">
           <div>
-            <h1 className="font-display text-[3.1rem] leading-[0.9] font-extrabold tracking-tight text-balance uppercase sm:text-7xl lg:text-[4.6rem] xl:text-[5rem]">
+            <h1 className="font-display text-[3.1rem] leading-[0.98] font-extrabold tracking-tight text-balance uppercase sm:text-7xl lg:text-[4.6rem] xl:text-[5rem]">
               {h.title.split(/(?<=\.)\s+/).map((line) => (
                 <span key={line} className="block">
                   {line}

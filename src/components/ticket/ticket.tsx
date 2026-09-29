@@ -104,7 +104,7 @@ export function Ticket({
             {eventName}
           </Heading>
           {tagline && <p className="mt-1.5 line-clamp-2 text-sm text-stock-ink-soft">{tagline}</p>}
-          <dl className={cn("grid grid-cols-2 gap-x-4 gap-y-2 border-t-[1.5px] border-stock-ink/70 pt-3", compact ? "mt-3" : "mt-4")}>
+          <dl className={cn("grid grid-cols-2 gap-x-4 gap-y-2 border-t-[1.5px] border-stock-ink/70 pt-3", compact ? "mt-3" : "mt-4", stamp && (rules && !compact ? "" : "pr-24"))}>
             <div className="col-span-2 @[30rem]:col-span-1">
               <dt className="label-caps text-stock-ink-soft">{labels.venue}</dt>
               <dd className="text-sm font-semibold">{venue}</dd>
@@ -117,7 +117,7 @@ export function Ticket({
             </div>
           </dl>
           {rules && !compact && (
-            <div className="mt-3 border-t-[1.5px] border-dashed border-stock-ink/50 pt-2.5">
+            <div className={cn("mt-3 border-t-[1.5px] border-dashed border-stock-ink/50 pt-2.5", stamp && "pr-28")}>
               <p className="sr-only">{labels.rules}</p>
               <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 <li>

@@ -609,7 +609,7 @@ const fr: Dictionary = {
     },
     door: {
       title: "Entrée",
-      intro: "Contrôlez les billets à l'entrée. Chaque invité présente un code de son portefeuille; vous obtenez un verdict et sa raison en une seconde environ.",
+      intro: "Scannez le code de chaque invité. Verdict et raison en une seconde environ.",
       event: "Événement",
       admitted: "Entrés",
       refused: "Refusés",
