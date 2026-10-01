@@ -65,7 +65,8 @@ export interface TicketProps {
   rules?: TicketRuleValues
   /** Replaces the stub's default token block, e.g. with the live entry code. */
   stub?: React.ReactNode
-  stamp?: { label: string; tone: StampTone; animate?: boolean }
+  /** `hidden` keeps its space but not its ink, so it can thump in later without the layout moving. */
+  stamp?: { label: string; tone: StampTone; animate?: boolean; hidden?: boolean }
   /** Play the tear: the stub drops away along the perforation. */
   tearing?: boolean
   /** Short shake (refused at the door). */
@@ -233,7 +234,7 @@ export function Ticket({
           </div>
         )}
         {stamp && (
-          <div key={stamp.label} className="pointer-events-none absolute right-4 bottom-4 @[30rem]:right-6">
+          <div key={stamp.label} className={cn("pointer-events-none absolute right-4 bottom-4 @[30rem]:right-6", stamp.hidden && "invisible")}>
             <Stamp tone={stamp.tone} animate={stamp.animate} size="md" surface="stock">
               {stamp.label}
             </Stamp>

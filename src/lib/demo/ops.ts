@@ -59,6 +59,67 @@ export function capOf(ev: EventItem, face: Cents, t?: Ticket): Cents {
   return Math.floor((face * capPctOf(ev, t)) / 100)
 }
 
+/* -------------------------------------------------------------------- market */
+
+export interface MarketSale {
+  price: Cents
+  at: number
+  serial: string
+}
+
+/** Small deterministic PRNG seeded from a string, so the simulated history is stable across reloads. */
+function seeded(key: string) {
+  let x = 2166136261
+  for (let i = 0; i < key.length; i++) x = Math.imul(x ^ key.charCodeAt(i), 16777619) >>> 0
+  return () => {
+    x = (Math.imul(x, 1664525) + 1013904223) >>> 0
+    return x / 4294967296
+  }
+}
+
+/**
+ * Recent resales of tickets like this one: same show and tier, foils counted
+ * apart. The demo has no real market, so each tier gets a few simulated sales
+ * (stable per tier, between face and the cap that applies), merged with the
+ * resales actually made in this demo. Newest first.
+ */
+export function recentSales(s: DemoState, t: Ticket): { similar: MarketSale[]; foil: MarketSale[] } {
+  const ev = eventById(s, t.eventId)
+  if (!ev) return { similar: [], foil: [] }
+  const face = faceOf(s, t)
+  const base = ev.rules.resaleCapPct
+  const simulate = (foil: boolean, n: number): MarketSale[] => {
+    const r = seeded(`${ev.id}:${t.tierId}:${foil ? "foil" : "std"}`)
+    const lo = foil ? base : Math.min(96, base)
+    const hi = foil ? base + RARE_CAP_BONUS : base
+    return Array.from({ length: n }, (_, i) => ({
+      price: Math.round((face * (lo + r() * (hi - lo))) / 100 / 50) * 50,
+      at: s.seededAt - (i * 9 + 2 + r() * 6) * 3_600_000,
+      serial: String(100 + Math.floor(r() * 2300)).padStart(4, "0"),
+    }))
+  }
+  const real = { similar: [] as MarketSale[], foil: [] as MarketSale[] }
+  for (const tx of s.txs) {
+    if (tx.state !== "confirmed" || (tx.kind !== "resaleSold" && tx.kind !== "buyResale")) continue
+    const sold = s.tickets.find((x) => x.serial === tx.vars.serial && x.eventId === ev.id)
+    if (!sold || sold.tierId !== t.tierId) continue
+    const price = tx.kind === "resaleSold" ? Number(tx.vars.price) : -(tx.amount ?? 0) - NETWORK_FEE
+    ;(sold.rare ? real.foil : real.similar).push({ price, at: tx.at, serial: sold.serial })
+  }
+  const newest = (a: MarketSale, b: MarketSale) => b.at - a.at
+  return {
+    similar: [...real.similar, ...simulate(false, 4)].sort(newest).slice(0, 5),
+    foil: [...real.foil, ...simulate(true, 3)].sort(newest).slice(0, 5),
+  }
+}
+
+export function median(sales: MarketSale[]): Cents | null {
+  if (sales.length === 0) return null
+  const p = sales.map((x) => x.price).sort((a, b) => a - b)
+  const m = Math.floor(p.length / 2)
+  return p.length % 2 ? p[m] : Math.round((p[m - 1] + p[m]) / 2)
+}
+
 export function perksOf(t: Ticket): RarePerk[] {
   return t.rare ? RARE_PERKS[t.rare.art] ?? [] : []
 }
