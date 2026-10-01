@@ -398,7 +398,7 @@ function ResaleList({ ev }: { ev: EventItem }) {
           {rows.map(({ listing, ticket }) => {
             const tier = tierOf(ev, ticket.tierId)
             const face = tier?.price ?? ticket.paid
-            const cap = capOf(ev, face)
+            const cap = capOf(ev, face, ticket)
             const mine = listing.seller.toLowerCase() === you
             return (
               <li key={listing.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">

@@ -408,6 +408,33 @@
   mask-image: radial-gradient(farthest-corner circle at var(--foil-x) var(--foil-y), #000 0%, rgb(0 0 0 / 0.35) 30%, rgb(0 0 0 / 0.08) 70%);
 }
 
+/*
+ * Embossed zig-zag foil: two scales of chevron lines, lit in diagonal bands
+ * that slide as the light moves, so rows flash brighter and dimmer across the card.
+ */
+@utility foil-texture {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='7' viewBox='0 0 14 7'%3E%3Cpath d='M0 5.5 3.5 1.5 7 5.5 10.5 1.5 14 5.5' fill='none' stroke='white' stroke-width='0.9'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cpath d='M0 16 10 4 20 16 30 4 40 16' fill='none' stroke='white' stroke-width='1.4' opacity='0.7'/%3E%3C/svg%3E");
+  background-size:
+    14px 7px,
+    40px 20px;
+  mix-blend-mode: overlay;
+  opacity: 0.85;
+  -webkit-mask-image:
+    repeating-linear-gradient(120deg, rgb(0 0 0 / 0.08) 0%, #000 6%, rgb(0 0 0 / 0.08) 12%, rgb(0 0 0 / 0.5) 17%, rgb(0 0 0 / 0.08) 22%),
+    radial-gradient(farthest-corner circle at var(--foil-x) var(--foil-y), #000 0%, rgb(0 0 0 / 0.25) 55%);
+  mask-image:
+    repeating-linear-gradient(120deg, rgb(0 0 0 / 0.08) 0%, #000 6%, rgb(0 0 0 / 0.08) 12%, rgb(0 0 0 / 0.5) 17%, rgb(0 0 0 / 0.08) 22%),
+    radial-gradient(farthest-corner circle at var(--foil-x) var(--foil-y), #000 0%, rgb(0 0 0 / 0.25) 55%);
+  -webkit-mask-size: 300% 300%, 100% 100%;
+  mask-size: 300% 300%, 100% 100%;
+  -webkit-mask-position: var(--foil-x) var(--foil-y), 0 0;
+  mask-position: var(--foil-x) var(--foil-y), 0 0;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
 /* The light catching the card where the pointer is. */
 @utility foil-glare {
   background: radial-gradient(circle at var(--foil-x) var(--foil-y), rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.1) 28%, transparent 55%);

@@ -13,7 +13,7 @@ import { NftCard } from "@/components/ui/nft-card"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
-import { capOf, cancelListing, eventById, faceOf, faucet, listTicket, royaltyOf, simulateBuyer, yourTickets } from "@/lib/demo/ops"
+import { capOf, capPctOf, cancelListing, eventById, faceOf, faucet, listTicket, royaltyOf, simulateBuyer, yourTickets } from "@/lib/demo/ops"
 import { NETWORK_FEE } from "@/lib/demo/seed"
 import { useNow } from "@/hooks/use-now"
 import { getDemo, useDemo } from "@/lib/demo/store"
@@ -132,7 +132,7 @@ function TicketItem({ ticket, state, onSold }: { ticket: TicketT; state: DemoSta
   const w = d.walletView
   const ev = eventById(state, ticket.eventId)
   const face = faceOf(state, ticket)
-  const cap = ev ? capOf(ev, face) : face
+  const cap = ev ? capOf(ev, face, ticket) : face
   const [showCode, setShowCode] = useState(false)
   const [reselling, setReselling] = useState(false)
   const [price, setPrice] = useState(cap)
@@ -273,7 +273,7 @@ function TicketItem({ ticket, state, onSold }: { ticket: TicketT; state: DemoSta
           <div className="mb-5" />
           <ResaleRail
             face={face}
-            capPct={ev.rules.resaleCapPct}
+            capPct={capPctOf(ev, ticket)}
             royaltyPct={ev.rules.royaltyPct}
             value={price}
             onChange={setPrice}

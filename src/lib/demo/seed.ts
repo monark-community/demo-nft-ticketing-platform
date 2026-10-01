@@ -1,5 +1,5 @@
 import { randomAddress, txHash } from "./ids"
-import type { Address, DemoState, EventItem, Guest, LedgerLine, Listing, Organizer, Souvenir, Ticket } from "./types"
+import type { Address, DemoState, EventItem, Guest, LedgerLine, Listing, Organizer, RareArt, RarePerk, Souvenir, Ticket } from "./types"
 
 /**
  * The starting world. All artists, venues, teams and people are invented.
@@ -14,6 +14,17 @@ export const NETWORK_FEE = 4 // 0.04 tUSDC per transaction
 export const RARE_ODDS = 1
 /** Size of each show's foil edition. */
 export const RARE_EDITION = 50
+/** Percentage points a foil adds to the show's resale cap (110 % of face becomes 135 %). */
+export const RARE_CAP_BONUS = 25
+/** Perks that come with each foil artwork. */
+export const RARE_PERKS: Record<RareArt, RarePerk[]> = {
+  afterglow: ["earlyEntry", "merch"],
+  marquee: ["earlyEntry", "soundcheck"],
+  aurora: ["earlyEntry", "lounge"],
+  vinyl: ["earlyEntry", "poster"],
+  confetti: ["earlyEntry", "afterparty"],
+  neon: ["earlyEntry", "merch"],
+}
 
 const HOUR = 3_600_000
 const DAY = 24 * HOUR

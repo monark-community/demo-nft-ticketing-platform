@@ -3,13 +3,14 @@
 import { SparklesIcon } from "lucide-react"
 import { useState } from "react"
 
-import { FoilTilt } from "@/components/ticket/foil-tilt"
+import { FoilPiece, FoilTilt } from "@/components/ticket/foil-tilt"
 import { Ticket } from "@/components/ticket/ticket"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { t } from "@/i18n/t"
-import { eventById } from "@/lib/demo/ops"
+import { capPctOf, eventById, perksOf } from "@/lib/demo/ops"
 import { useDemo } from "@/lib/demo/store"
 import type { DemoState, Ticket as TicketItem } from "@/lib/demo/types"
+import { percent } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useApp } from "./app-context"
@@ -49,9 +50,26 @@ export function RareDropReveal({ ticket, onDone }: { ticket: TicketItem; onDone:
           </DialogTitle>
           <DialogDescription className="mt-2 text-sm text-[#e9dcc4]">
             {revealed
-              ? t(r.revealedBody, { serial: ticket.serial, n: ticket.rare.edition, of: ticket.rare.of, event: ev?.name ?? "" })
+              ? t(r.revealedBody, {
+                  serial: ticket.serial,
+                  n: ticket.rare.edition,
+                  of: ticket.rare.of,
+                  event: ev?.name ?? "",
+                  base: ev ? percent(ev.rules.resaleCapPct, copy.locale) : "",
+                  cap: ev ? percent(capPctOf(ev, ticket), copy.locale) : "",
+                })
               : r.sealed}
           </DialogDescription>
+          {revealed && (
+            <ul aria-label={copy.tk.perks} className="mt-3 flex flex-wrap justify-center gap-2">
+              {perksOf(ticket).map((p) => (
+                <li key={p} className="inline-flex items-center gap-1.5 rounded-full border border-[#f4c542]/50 px-3 py-1 text-sm font-semibold text-[#f4c542]">
+                  <SparklesIcon className="size-3.5" aria-hidden="true" />
+                  {copy.tk.rarePerks[p]}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="[perspective:1600px]">
@@ -99,8 +117,7 @@ function Sealed({ label }: { label: string }) {
       <FoilTilt captureTouch>
         <div className="paper-drop relative flex flex-col text-[#f4c542] @[30rem]:flex-row">
           <div className="relative flex min-h-56 min-w-0 flex-1 flex-col justify-between rounded-t-lg bg-[#1c1814] p-6 notch-b @[30rem]:rounded-l-lg @[30rem]:rounded-tr-none @[30rem]:notch-r">
-            <span aria-hidden="true" className="foil-sheen pointer-events-none absolute inset-0" />
-            <span aria-hidden="true" className="foil-glare pointer-events-none absolute inset-0" />
+            <FoilPiece />
             <span className="label-caps inline-flex items-center gap-1.5">
               <SparklesIcon className="size-3.5" aria-hidden="true" />
               {label}
@@ -110,7 +127,7 @@ function Sealed({ label }: { label: string }) {
             </span>
           </div>
           <div className="relative flex min-h-24 shrink-0 items-center justify-center rounded-b-lg border-t-2 border-dashed border-[#f4c542]/40 bg-[#1c1814] p-5 notch-t @[30rem]:w-44 @[30rem]:rounded-tr-lg @[30rem]:rounded-b-none @[30rem]:rounded-br-lg @[30rem]:border-t-0 @[30rem]:border-l-2 @[30rem]:notch-l">
-            <span aria-hidden="true" className="foil-sheen pointer-events-none absolute inset-0" />
+            <FoilPiece end />
             <SparklesIcon className="size-12" aria-hidden="true" />
           </div>
         </div>
