@@ -126,7 +126,7 @@ async function rareDrop(page, v, capture) {
   await card.click()
   const done = dialog(page).getByRole("button", { name: t.rareDone })
   await done.waitFor()
-  await page.waitForTimeout(1500)
+  await page.waitForTimeout(2400)
   const box = await done.boundingBox()
   if (box) await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.2, { steps: 8 })
   if (capture) await shot(page, v, "flow1-rare-revealed")

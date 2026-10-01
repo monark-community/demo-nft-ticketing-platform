@@ -25,6 +25,7 @@ import { useApp } from "./app-context"
 import { isTonight } from "./box-office"
 import { errorText, FlowFeedback, livePending, txLabel, useConnect, type FlowState } from "./feedback"
 import { souvenirArt } from "./souvenir-art"
+import { FlipButton } from "./rare-drop"
 import { ticketProps } from "./ticket-props"
 
 export function WalletView() {
@@ -134,6 +135,7 @@ function TicketItem({ ticket, state, onSold }: { ticket: TicketT; state: DemoSta
   const face = faceOf(state, ticket)
   const cap = ev ? capOf(ev, face, ticket) : face
   const [showCode, setShowCode] = useState(false)
+  const [flipped, setFlipped] = useState(false)
   const [reselling, setReselling] = useState(false)
   const [price, setPrice] = useState(cap)
   const [flow, setFlow] = useState<FlowState>({ phase: "idle" })
@@ -212,12 +214,14 @@ function TicketItem({ ticket, state, onSold }: { ticket: TicketT; state: DemoSta
       <Ticket
         {...ticketProps(state, ticket, copy)}
         dimmed={used}
+        flipped={flipped}
         stamp={stamp}
         stub={
           showCode && !used ? <EntryCode ticket={ticket} signer={ticket.owner} labels={tk} size="sm" /> : undefined
         }
       />
       <div className="flex flex-wrap gap-2">
+        {ticket.rare && <FlipButton flipped={flipped} onFlip={() => setFlipped((f) => !f)} labels={tk} />}
         {!used && !listing && (
           <>
             <Button variant={showCode ? "default" : "outline"} className={cn("h-11", !showCode && "border-input")} onClick={() => setShowCode((v) => !v)} aria-pressed={showCode}>

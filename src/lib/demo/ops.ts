@@ -3,7 +3,7 @@
 import { entryCode, staleCode, verifyCode } from "./code"
 import { randomAddress, randomHex, txHash, uid } from "./ids"
 import { latency, runTx, sleep, type RunResult } from "./chain"
-import { FAUCET_AMOUNT, NETWORK_FEE, RARE_CAP_BONUS, RARE_EDITION, RARE_ODDS, RARE_PERKS } from "./seed"
+import { FAUCET_AMOUNT, FOIL_PATTERNS, NETWORK_FEE, RARE_CAP_BONUS, RARE_EDITION, RARE_ODDS, RARE_PERKS } from "./seed"
 import { getDemo, requestSignature, setWallet, update } from "./store"
 import type {
   Cents,
@@ -138,15 +138,21 @@ function seatFor(tier: Tier, index: number): string {
 function rollRare(s: DemoState, ev: EventItem): RareDrop | undefined {
   const dropped = s.tickets.filter((t) => t.eventId === ev.id && t.rare).length
   if (dropped >= RARE_EDITION || Math.random() >= RARE_ODDS) return undefined
-  const arts = Object.keys(RARE_PERKS) as RareArt[]
   const recent = s.tickets
     .filter((t) => t.rare)
     .sort((a, b) => b.mintedAt - a.mintedAt)
-    .slice(0, Math.floor(arts.length / 2))
-    .map((t) => t.rare!.art)
-  const pool = arts.filter((a) => !recent.includes(a))
-  const choices = pool.length ? pool : arts
-  return { art: choices[Math.floor(Math.random() * choices.length)], edition: dropped + 1, of: RARE_EDITION }
+    .map((t) => t.rare as RareDrop)
+  const art = pickFresh(Object.keys(RARE_PERKS) as RareArt[], recent.map((r) => r.art))
+  const pattern = pickFresh(FOIL_PATTERNS, recent.map((r) => r.pattern ?? "zigzag"))
+  return { art, pattern, edition: dropped + 1, of: RARE_EDITION }
+}
+
+/** A random option, skipping the ones dealt most recently (up to half the options). */
+function pickFresh<T>(options: T[], recentFirst: T[]): T {
+  const skip = recentFirst.slice(0, Math.floor(options.length / 2))
+  const pool = options.filter((o) => !skip.includes(o))
+  const choices = pool.length ? pool : options
+  return choices[Math.floor(Math.random() * choices.length)]
 }
 
 function mint(s: DemoState, ev: EventItem, tier: Tier, qty: number, paid: Cents): { state: DemoState; ids: string[] } {

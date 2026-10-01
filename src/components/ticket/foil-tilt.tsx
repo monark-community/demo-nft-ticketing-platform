@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 
+import type { FoilPattern } from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
 
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
@@ -16,10 +17,13 @@ const clamp = (n: number) => Math.min(1, Math.max(0, n))
 export function FoilPiece({
   end,
   art,
+  pattern = "zigzag",
   glare = true,
   sweep,
 }: {
   end?: boolean
+  /** Embossed foil pattern (a `.foil-<pattern>` class in globals.css). */
+  pattern?: FoilPattern
   /** Background of the card's art layer (painted under the piece's content). */
   art?: React.CSSProperties
   glare?: boolean
@@ -33,7 +37,7 @@ export function FoilPiece({
     <>
       {art && <span aria-hidden="true" className={cn(box, "-z-10")} style={art} />}
       <span aria-hidden="true" className={cn(box, "foil-sheen")} />
-      <span aria-hidden="true" className={cn(box, "foil-texture")} />
+      <span aria-hidden="true" className={cn(box, "foil-texture", `foil-${pattern}`)} />
       {glare && <span aria-hidden="true" className={cn(box, "foil-glare")} />}
       {sweep && <span aria-hidden="true" className={cn(box, "animate-foil-sweep")} />}
     </>
