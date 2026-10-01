@@ -139,7 +139,7 @@ type Purchase = ReturnType<typeof usePurchase>
 /**
  * What was just bought on this page, shared by the inline checkout, the phone
  * sheet and the purchased-ticket blocks. A rare drop waits behind its reveal
- * (drop) and is shown once it's put away.
+ * (drop) and is shown, with a sweep, once it's put away.
  */
 function usePurchase() {
   const [ids, setIds] = useState<string[]>([])
@@ -194,6 +194,7 @@ function MintedTicket({ ticket, purchase, className }: { ticket: TicketItem; pur
       <Ticket
         {...ticketProps(state, ticket, copy)}
         compact
+        sweep={purchase.justRevealed}
         flipped={purchase.flipped}
         stamp={{ label: tk.stamps.minted, tone: "ink", animate: true }}
       />

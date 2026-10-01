@@ -19,6 +19,7 @@ export function FoilPiece({
   art,
   pattern = "zigzag",
   glare = true,
+  sweep,
 }: {
   end?: boolean
   /** Embossed foil pattern (a `.foil-<pattern>` class in globals.css). */
@@ -26,6 +27,8 @@ export function FoilPiece({
   /** Background of the card's art layer (painted under the piece's content). */
   art?: React.CSSProperties
   glare?: boolean
+  /** One bright pass across the card (just revealed). */
+  sweep?: boolean
 }) {
   const box = cn(
     "pointer-events-none absolute h-[var(--card-h,100%)] w-[var(--card-w,100%)]",
@@ -37,6 +40,7 @@ export function FoilPiece({
       <span aria-hidden="true" className={cn(box, "foil-sheen")} />
       <span aria-hidden="true" className={cn(box, "foil-texture", `foil-${pattern}`)} />
       {glare && <span aria-hidden="true" className={cn(box, "foil-glare")} />}
+      {sweep && <span aria-hidden="true" className={cn(box, "animate-foil-sweep")} />}
     </>
   )
 }

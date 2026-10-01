@@ -78,7 +78,7 @@ export function RareDropReveal({ ticket, onDone }: { ticket: TicketItem; onDone:
         closeLabel={r.close}
         overlayClassName={cn("rare-overlay bg-[#0d0a08]/90 backdrop-blur-sm", `rare-${phase}`)}
         overlayStyle={{ "--rare-glow": rareArt(ticket.rare.art).ink.line } as React.CSSProperties}
-        className="max-w-3xl gap-5 border-0 bg-transparent px-4 py-10 text-[#fff8ea] shadow-none sm:px-8 [&>button:last-child]:text-[#fff8ea]"
+        className="max-w-3xl gap-5 overflow-x-hidden border-0 bg-transparent px-6 py-10 text-[#fff8ea] shadow-none sm:px-8 [&>button:last-child]:text-[#fff8ea]"
       >
         {/*
           Both states share one cell (the inactive one hidden but still taking
@@ -150,6 +150,7 @@ export function RareDropReveal({ ticket, onDone }: { ticket: TicketItem; onDone:
             <div className={cn(face, "flex items-center [transform:rotateY(180deg)]")} aria-hidden={!revealed}>
               <Ticket
                 {...ticketProps(state, ticket, copy)}
+                sweep={revealed}
                 tiltPaused={!revealed}
                 captureTouch
                 flipped={flipped}

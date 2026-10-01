@@ -487,6 +487,22 @@
   mix-blend-mode: overlay;
 }
 
+/* One bright pass across the card when it's revealed. */
+@keyframes foil-sweep {
+  from {
+    background-position: -120% 0;
+  }
+  to {
+    background-position: 220% 0;
+  }
+}
+@utility animate-foil-sweep {
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.45) 50%, transparent 65%) no-repeat;
+  background-size: 60% 100%;
+  mix-blend-mode: overlay;
+  animation: foil-sweep 1100ms cubic-bezier(0.4, 0, 0.2, 1) 250ms both;
+}
+
 /* The sealed rare drop waits, bobbing. */
 @keyframes rare-bob {
   0%,
@@ -507,25 +523,25 @@
     transform: translate(0, 0) rotate(0) scale(1);
   }
   15% {
-    transform: translate(-1px, 1px) rotate(-0.6deg) scale(1.01);
+    transform: translate(-1px, 1px) rotate(-0.3deg) scale(1.004);
   }
   30% {
-    transform: translate(2px, -1px) rotate(0.9deg) scale(1.02);
+    transform: translate(1px, -1px) rotate(0.5deg) scale(1.008);
   }
   45% {
-    transform: translate(-3px, 2px) rotate(-1.4deg) scale(1.03);
+    transform: translate(-2px, 1px) rotate(-0.7deg) scale(1.012);
   }
   60% {
-    transform: translate(4px, -2px) rotate(1.9deg) scale(1.04);
+    transform: translate(2px, -1px) rotate(1deg) scale(1.016);
   }
   75% {
-    transform: translate(-5px, 3px) rotate(-2.5deg) scale(1.05);
+    transform: translate(-3px, 2px) rotate(-1.2deg) scale(1.02);
   }
   90% {
-    transform: translate(6px, -3px) rotate(3deg) scale(1.07);
+    transform: translate(3px, -2px) rotate(1.5deg) scale(1.025);
   }
   100% {
-    transform: translate(0, 0) rotate(0) scale(1.08);
+    transform: translate(0, 0) rotate(0) scale(1.03);
   }
 }
 @utility animate-rare-charge {
@@ -547,12 +563,13 @@
     transform: rotateY(540deg);
   }
 }
+/* Kept small: with the perspective, the turning card must stay inside the dialog's side padding. */
 @keyframes rare-pop {
   0% {
-    scale: 1.08;
+    scale: 1.03;
   }
   35% {
-    scale: 1.13;
+    scale: 1.06;
   }
   100% {
     scale: 1;
