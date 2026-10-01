@@ -1,0 +1,353 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * NFTokenPass identity: "box-office card stock, house lights".
+ * Built on the Monark UI registry theme (variable structure), with every
+ * colour, the radius and the fonts overridden. See docs/site-plan.md §8.
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius: 0.375rem;
+  --font-sans: var(--font-text), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-marquee), var(--font-text), ui-sans-serif, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Cascadia Mono", monospace;
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  /* The ticket's own card stock: identical in both themes. */
+  --color-stock: #f4c542;
+  --color-stock-ink: #1c1814;
+  --color-stock-ink-soft: #4a3f2c;
+  --color-stock-line: #c9a032;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Light: card stock and press ink. */
+:root {
+  --background: #f5efe3;
+  --foreground: #1c1814;
+  --card: #fffcf5;
+  --card-foreground: #1c1814;
+  --popover: #fffcf5;
+  --popover-foreground: #1c1814;
+  --primary: #1c1814;
+  --primary-foreground: #fff8ea;
+  --secondary: #eae2d2;
+  --secondary-foreground: #1c1814;
+  --muted: #eae2d2;
+  --muted-foreground: #5c5347;
+  --accent: #f4c542;
+  --accent-foreground: #1c1814;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --success: #1e6b43;
+  --success-foreground: #ffffff;
+  --warning: #8a5300;
+  --border: #d8ccb6;
+  --input: #b9ab92;
+  --ring: #1c1814;
+  --chart-1: #1c1814;
+  --chart-2: #c08a1e;
+  --chart-3: #2f6b62;
+  --chart-4: #9c4a3a;
+  --chart-5: #8c8171;
+  --sidebar: #fffcf5;
+  --sidebar-foreground: #1c1814;
+  --sidebar-primary: #1c1814;
+  --sidebar-primary-foreground: #fff8ea;
+  --sidebar-accent: #eae2d2;
+  --sidebar-accent-foreground: #1c1814;
+  --sidebar-border: #d8ccb6;
+  --sidebar-ring: #1c1814;
+  --paper-shadow: #d8ccb6;
+  color-scheme: light;
+}
+
+/* Dark: house lights down; the marquee yellow is what you act on. */
+.dark {
+  --background: #14110e;
+  --foreground: #f2eadb;
+  --card: #1e1a16;
+  --card-foreground: #f2eadb;
+  --popover: #1e1a16;
+  --popover-foreground: #f2eadb;
+  --primary: #f4c542;
+  --primary-foreground: #1c1814;
+  --secondary: #2a2520;
+  --secondary-foreground: #f2eadb;
+  --muted: #2a2520;
+  --muted-foreground: #b3a792;
+  --accent: #3a3128;
+  --accent-foreground: #f2eadb;
+  --destructive: #f2766b;
+  --destructive-foreground: #14110e;
+  --success: #6ccb94;
+  --success-foreground: #14110e;
+  --warning: #e8b04a;
+  --border: #3a332a;
+  --input: #5a5044;
+  --ring: #f4c542;
+  --chart-1: #f4c542;
+  --chart-2: #f2eadb;
+  --chart-3: #6fb3a6;
+  --chart-4: #d98b73;
+  --chart-5: #9c917f;
+  --sidebar: #1e1a16;
+  --sidebar-foreground: #f2eadb;
+  --sidebar-primary: #f4c542;
+  --sidebar-primary-foreground: #1c1814;
+  --sidebar-accent: #2a2520;
+  --sidebar-accent-foreground: #f2eadb;
+  --sidebar-border: #3a332a;
+  --sidebar-ring: #f4c542;
+  --paper-shadow: #0a0806;
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01";
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-stock);
+    color: var(--color-stock-ink);
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.01em;
+}
+
+/* Small caps-like label used for eyebrows and ticket fields. */
+@utility label-caps {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Flat "stacked paper" depth: a hard offset, never a blur. */
+@utility paper-edge {
+  box-shadow: 0 2px 0 var(--paper-shadow);
+}
+
+/* Same depth for masked shapes (tickets): put it on the wrapper. */
+@utility paper-drop {
+  filter: drop-shadow(0 2px 0 var(--paper-shadow));
+}
+
+/*
+ * Punched half-notches on the edge a ticket piece shares with the perforation
+ * (shape masks, not colour gradients). The main part and the stub are masked
+ * separately so the stub can tear away.
+ */
+@utility notch-r {
+  -webkit-mask:
+    radial-gradient(circle 11px at 100% 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 11px at 100% 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+  mask:
+    radial-gradient(circle 11px at 100% 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 11px at 100% 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+}
+@utility notch-l {
+  -webkit-mask:
+    radial-gradient(circle 11px at 0 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 11px at 0 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+  mask:
+    radial-gradient(circle 11px at 0 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 11px at 0 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+}
+@utility notch-b {
+  -webkit-mask:
+    radial-gradient(circle 11px at 0 100%, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 11px at 100% 100%, #0000 98%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 11px at 0 100%, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 11px at 100% 100%, #0000 98%, #000) right / 51% 100% no-repeat;
+}
+@utility notch-t {
+  -webkit-mask:
+    radial-gradient(circle 11px at 0 0, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 11px at 100% 0, #0000 98%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 11px at 0 0, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 11px at 100% 0, #0000 98%, #000) right / 51% 100% no-repeat;
+}
+
+/* Stamps land with a quick thunk. */
+@keyframes stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(var(--stamp-rot, -8deg));
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.94) rotate(var(--stamp-rot, -8deg));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(var(--stamp-rot, -8deg));
+  }
+}
+
+@keyframes tear-off {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+  35% {
+    transform: translate(6px, -2px) rotate(3deg);
+  }
+  100% {
+    transform: translate(18px, 26px) rotate(9deg);
+    opacity: 0.35;
+  }
+}
+
+@keyframes tear-off-y {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+  35% {
+    transform: translate(-2px, 6px) rotate(-2deg);
+  }
+  100% {
+    transform: translate(10px, 22px) rotate(-6deg);
+    opacity: 0.35;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes rail-bump {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(-5px);
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    top: 8%;
+  }
+  50% {
+    top: 88%;
+  }
+  100% {
+    top: 8%;
+  }
+}
+
+@utility animate-stamp {
+  animation: stamp-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@utility animate-tear {
+  animation: tear-off 520ms cubic-bezier(0.4, 0, 0.6, 1) 160ms both;
+}
+@utility animate-tear-y {
+  animation: tear-off-y 520ms cubic-bezier(0.4, 0, 0.6, 1) 160ms both;
+}
+@utility animate-shake {
+  animation: shake 360ms ease-in-out both;
+}
+@utility animate-rail-bump {
+  animation: rail-bump 220ms ease-out;
+}
+@utility animate-scan {
+  animation: scan-line 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
