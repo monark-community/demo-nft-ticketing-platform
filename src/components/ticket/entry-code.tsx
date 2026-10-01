@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
 import { codeMatrix, CODE_WINDOW_MS, entryCode, msUntilRotation, windowOf } from "@/lib/demo/code"
 import type { Address } from "@/lib/demo/types"
@@ -15,7 +15,7 @@ export function CodeMatrix({ code, className, label }: { code: string; className
   return (
     <svg
       viewBox={`-1 -1 ${n + 2} ${n + 2}`}
-      className={cn("block aspect-square bg-white text-stock-ink", className)}
+      className={cn("block aspect-square bg-code-paper text-code-ink", className)}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
@@ -25,6 +25,21 @@ export function CodeMatrix({ code, className, label }: { code: string; className
         row.map((on, c) => (on ? <rect key={`${r}-${c}`} x={c} y={r} width="1" height="1" fill="currentColor" /> : null))
       )}
     </svg>
+  )
+}
+
+/**
+ * One code window's countdown. The start offset is fixed when the window's bar
+ * mounts (keyed by window), so the once-a-second re-renders above never touch
+ * the running animation and it drains smoothly.
+ */
+function DrainBar({ msLeft }: { msLeft: number }) {
+  const [delay] = useState(() => CODE_WINDOW_MS - msLeft)
+  return (
+    <div
+      className="h-full origin-left bg-stock-ink"
+      style={{ animation: `drain ${CODE_WINDOW_MS}ms linear both`, animationDelay: `-${delay}ms` }}
+    />
   )
 }
 
@@ -50,23 +65,14 @@ export function EntryCode({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <div className={cn("rounded-[3px] bg-white p-1.5", size === "sm" ? "w-24" : "w-32")}>
-        {code ? <CodeMatrix code={code} label={`${labels.entryCode}: ${code}`} /> : <div className="aspect-square animate-pulse bg-stock-ink/10" />}
+      <div className={cn("relative z-10 rounded-[3px] bg-code-paper p-1.5", size === "sm" ? "w-24" : "w-32")}>
+        {code ? <CodeMatrix code={code} label={`${labels.entryCode}: ${code}`} /> : <div className="aspect-square animate-pulse bg-code-ink/10" />}
       </div>
       <p className="font-mono text-[11px] font-semibold whitespace-nowrap tabular-nums" aria-live="off">
         {code || "NTP-····-······"}
       </p>
       <div className="h-1 w-full overflow-hidden rounded-full bg-stock-ink/15" aria-hidden="true">
-        {now !== null && (
-          <div
-            key={win}
-            className="h-full origin-left bg-stock-ink"
-            style={{
-              animation: `drain ${CODE_WINDOW_MS}ms linear both`,
-              animationDelay: `-${CODE_WINDOW_MS - msUntilRotation(time)}ms`,
-            }}
-          />
-        )}
+        {now !== null && <DrainBar key={win} msLeft={msUntilRotation(time)} />}
       </div>
       <p className="text-[11px] text-stock-ink-soft tabular-nums">{t(labels.codeRotates, { s: secs })}</p>
     </div>

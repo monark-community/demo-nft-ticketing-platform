@@ -66,11 +66,19 @@ export type PosterTone = "ink" | "stock" | "brick" | "teal" | "cream"
 export type TicketStatus = "held" | "listed" | "used"
 
 /** Artwork printed on a rare foil ticket (see components/ticket/rare-art.ts). */
-export type RareArt = "afterglow" | "marquee" | "aurora"
+export type RareArt = "afterglow" | "marquee" | "aurora" | "vinyl" | "confetti" | "neon"
+
+/** What holding a rare foil gets you at the show (see RARE_PERKS in seed.ts). */
+export type RarePerk = "earlyEntry" | "merch" | "soundcheck" | "lounge" | "poster" | "afterparty"
+
+/** The foil's embossed pattern, drawn independently of the art. */
+export type FoilPattern = "zigzag" | "waves" | "lattice" | "scales" | "rings" | "glitter"
 
 /** A rare drop: the ticket was printed in foil with custom art, numbered within a small edition. */
 export interface RareDrop {
   art: RareArt
+  /** Missing on drops minted before patterns existed (they're zig-zag). */
+  pattern?: FoilPattern
   edition: number
   of: number
 }
