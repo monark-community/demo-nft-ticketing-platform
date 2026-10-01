@@ -3,7 +3,7 @@
 import { entryCode, staleCode, verifyCode } from "./code"
 import { randomAddress, randomHex, txHash, uid } from "./ids"
 import { latency, runTx, sleep, type RunResult } from "./chain"
-import { FAUCET_AMOUNT, NETWORK_FEE } from "./seed"
+import { FAUCET_AMOUNT, NETWORK_FEE, RARE_EDITION, RARE_ODDS } from "./seed"
 import { getDemo, requestSignature, setWallet, update } from "./store"
 import type {
   Cents,
@@ -12,6 +12,8 @@ import type {
   EventItem,
   Guest,
   L10n,
+  RareArt,
+  RareDrop,
   Ticket,
   TicketRules,
   Tier,
@@ -118,10 +120,20 @@ function seatFor(tier: Tier, index: number): string {
   return `${row}·${(index % 24) + 1}`
 }
 
+const RARE_ARTS: RareArt[] = ["afterglow", "marquee", "aurora"]
+
+/** At most one rare per purchase, numbered within the show's foil edition while it lasts. */
+function rollRare(s: DemoState, ev: EventItem, serial: number): RareDrop | undefined {
+  const dropped = s.tickets.filter((t) => t.eventId === ev.id && t.rare).length
+  if (dropped >= RARE_EDITION || Math.random() >= RARE_ODDS) return undefined
+  return { art: RARE_ARTS[serial % RARE_ARTS.length], edition: dropped + 1, of: RARE_EDITION }
+}
+
 function mint(s: DemoState, ev: EventItem, tier: Tier, qty: number, paid: Cents): { state: DemoState; ids: string[] } {
   const ids: string[] = []
   const tickets: Ticket[] = []
   let serial = s.nextSerial
+  const rare = rollRare(s, ev, serial)
   for (let i = 0; i < qty; i++) {
     const id = `t-${serial}-${randomHex(4)}`
     ids.push(id)
@@ -136,6 +148,7 @@ function mint(s: DemoState, ev: EventItem, tier: Tier, qty: number, paid: Cents)
       paid,
       status: "held",
       mintedAt: Date.now(),
+      ...(i === 0 && rare ? { rare } : {}),
     })
     serial++
   }

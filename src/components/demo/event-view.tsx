@@ -2,7 +2,7 @@
 
 import { ArrowLeftIcon, ArrowRightIcon, MinusIcon, PlusIcon } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { Stamp } from "@/components/ticket/stamp"
@@ -24,6 +24,7 @@ import { useApp, type AppCopy } from "./app-context"
 import { dateParts, isTonight } from "./box-office"
 import { errorText, FlowFeedback, livePending, useConnect, type FlowState } from "./feedback"
 import { Poster } from "./poster"
+import { RareDropReveal } from "./rare-drop"
 import { ticketProps } from "./ticket-props"
 
 function varsFor(state: DemoState, ev: EventItem, error: TxError, need: number) {
@@ -145,6 +146,13 @@ function Checkout({ ev }: { ev: EventItem }) {
   const [qty, setQty] = useState(1)
   const [flow, setFlow] = useState<FlowState>({ phase: "idle" })
   const [mintedIds, setMintedIds] = useState<string[]>([])
+  /** A rare drop waiting to be revealed: the minted ticket stays hidden here until it's put away. */
+  const [drop, setDrop] = useState<string | null>(null)
+  const [justRevealed, setJustRevealed] = useState(false)
+  const mintedRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (justRevealed) mintedRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" })
+  }, [justRevealed])
   const clockNow = useNow(60_000)
   const tier = tierOf(ev, tierId)
   const connected = state.wallet.status === "connected"
@@ -186,10 +194,14 @@ function Checkout({ ev }: { ev: EventItem }) {
       const ids = res.ids ?? []
       const serial = after?.tickets.find((x) => x.id === ids[0])?.serial ?? ""
       const message = ids.length > 1 ? t(e.successPlural, { n: ids.length }) : t(e.success, { serial })
-      setMintedIds(ids)
+      const rare = after?.tickets.find((x) => ids.includes(x.id) && x.rare)
+      setMintedIds(rare ? [rare.id, ...ids.filter((x) => x !== rare.id)] : ids)
+      setDrop(rare?.id ?? null)
+      setJustRevealed(false)
       setQty(1)
       setFlow({ phase: "done", tx: res.result?.tx, message })
-      toast.success(message)
+      // A rare drop announces itself; the toast waits until it's put away.
+      if (!rare) toast.success(message)
     } else {
       const s2 = getDemo()
       setFlow({ phase: "error", tx: res.result?.tx, message: errorText(copy, res.error, s2 ? varsFor(s2, ev, res.error, total) : {}) })
@@ -290,9 +302,25 @@ function Checkout({ ev }: { ev: EventItem }) {
           {tier && available(tier) === 0 && flow.phase === "idle" && <p className="text-sm font-medium text-destructive">{d.tx.errors.soldOut}</p>}
 
           <FlowFeedback state={shown} />
-          {flow.phase === "done" && minted && (
-            <div className="space-y-3">
-              <Ticket {...ticketProps(state, minted, copy)} compact stamp={{ label: tk.stamps.minted, tone: "ink", animate: true }} />
+          {flow.phase === "done" && minted && drop === minted.id && (
+            <RareDropReveal
+              key={minted.id}
+              ticket={minted}
+              onDone={() => {
+                setDrop(null)
+                setJustRevealed(true)
+                if (flow.phase === "done") toast.success(flow.message)
+              }}
+            />
+          )}
+          {flow.phase === "done" && minted && drop !== minted.id && (
+            <div ref={mintedRef} className={cn("space-y-3", justRevealed && "animate-in duration-500 fade-in-0 zoom-in-90")}>
+              <Ticket
+                {...ticketProps(state, minted, copy)}
+                compact
+                sweep={justRevealed}
+                stamp={{ label: tk.stamps.minted, tone: "ink", animate: true }}
+              />
               <Link href={href(locale, "/app/wallet")} className="inline-flex min-h-11 items-center gap-2 font-semibold underline-offset-4 hover:underline">
                 {e.seeWallet}
                 <ArrowRightIcon className="size-4" aria-hidden="true" />
