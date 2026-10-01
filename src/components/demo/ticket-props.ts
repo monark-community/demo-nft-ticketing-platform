@@ -1,6 +1,8 @@
 import { rareArt } from "@/components/ticket/rare-art"
 import type { TicketProps } from "@/components/ticket/ticket"
 import { t } from "@/i18n/t"
+import { capPctOf, perksOf } from "@/lib/demo/ops"
+import { RARE_CAP_BONUS } from "@/lib/demo/seed"
 import type { DemoState, Ticket } from "@/lib/demo/types"
 import { clock, eventDate, loc, percent } from "@/lib/format"
 
@@ -22,11 +24,29 @@ export function ticketProps(state: DemoState, ticket: Ticket, copy: AppCopy): Ti
     serial: ticket.serial,
     labels: tk,
     rare: ticket.rare
-      ? { ...rareArt(ticket.rare.art), label: t(tk.rare, { n: ticket.rare.edition, of: ticket.rare.of }) }
+      ? {
+          ...rareArt(ticket.rare.art),
+          label: t(tk.rare, { n: ticket.rare.edition, of: ticket.rare.of }),
+          perks: perksOf(ticket).map((p) => tk.rarePerks[p]),
+          perksLabel: tk.perks,
+          pattern: ticket.rare.pattern,
+          back: {
+            title: tk.perks,
+            perks: perksOf(ticket).map((p) => tk.rarePerks[p]),
+            stub: `${ticket.rare.edition}/${ticket.rare.of}`,
+            facts: [
+              ...(ev
+                ? [{ label: tk.cap, value: t(tk.back.capBoost, { pct: percent(capPctOf(ev, ticket), locale), bonus: RARE_CAP_BONUS }) }]
+                : []),
+              { label: tk.back.art, value: tk.rareArt[ticket.rare.art] },
+              { label: tk.back.foil, value: tk.foilPatterns[ticket.rare.pattern ?? "zigzag"] },
+            ],
+          },
+        }
       : undefined,
     rules: ev
       ? {
-          cap: t(tk.capValue, { pct: percent(ev.rules.resaleCapPct, locale) }),
+          cap: t(tk.capValue, { pct: percent(capPctOf(ev, ticket), locale) }),
           royalty: percent(ev.rules.royaltyPct, locale),
           limit: t(tk.limitValue, { n: ev.rules.perWalletLimit }),
           souvenir: ev.rules.souvenir ? tk.souvenirYes : tk.souvenirNo,

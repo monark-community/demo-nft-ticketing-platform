@@ -3,7 +3,7 @@
 import { entryCode, staleCode, verifyCode } from "./code"
 import { randomAddress, randomHex, txHash, uid } from "./ids"
 import { latency, runTx, sleep, type RunResult } from "./chain"
-import { FAUCET_AMOUNT, NETWORK_FEE, RARE_EDITION, RARE_ODDS } from "./seed"
+import { FAUCET_AMOUNT, FOIL_PATTERNS, NETWORK_FEE, RARE_CAP_BONUS, RARE_EDITION, RARE_ODDS, RARE_PERKS } from "./seed"
 import { getDemo, requestSignature, setWallet, update } from "./store"
 import type {
   Cents,
@@ -14,6 +14,7 @@ import type {
   L10n,
   RareArt,
   RareDrop,
+  RarePerk,
   Ticket,
   TicketRules,
   Tier,
@@ -49,8 +50,17 @@ export function heldFor(s: DemoState, eventId: string): number {
   return yourTickets(s).filter((t) => t.eventId === eventId).length
 }
 
-export function capOf(ev: EventItem, face: Cents): Cents {
-  return Math.floor((face * ev.rules.resaleCapPct) / 100)
+/** Resale cap in % of face for a ticket: the show's cap, raised for a rare foil. */
+export function capPctOf(ev: EventItem, t?: Ticket): number {
+  return ev.rules.resaleCapPct + (t?.rare ? RARE_CAP_BONUS : 0)
+}
+
+export function capOf(ev: EventItem, face: Cents, t?: Ticket): Cents {
+  return Math.floor((face * capPctOf(ev, t)) / 100)
+}
+
+export function perksOf(t: Ticket): RarePerk[] {
+  return t.rare ? RARE_PERKS[t.rare.art] ?? [] : []
 }
 
 export function royaltyOf(ev: EventItem, price: Cents): Cents {
@@ -120,20 +130,36 @@ function seatFor(tier: Tier, index: number): string {
   return `${row}·${(index % 24) + 1}`
 }
 
-const RARE_ARTS: RareArt[] = ["afterglow", "marquee", "aurora"]
-
-/** At most one rare per purchase, numbered within the show's foil edition while it lasts. */
-function rollRare(s: DemoState, ev: EventItem, serial: number): RareDrop | undefined {
+/**
+ * At most one rare per purchase, numbered within the show's foil edition while
+ * it lasts. The artwork is random, skipping the ones you were dealt most recently
+ * so each run of the demo turns up different foils.
+ */
+function rollRare(s: DemoState, ev: EventItem): RareDrop | undefined {
   const dropped = s.tickets.filter((t) => t.eventId === ev.id && t.rare).length
   if (dropped >= RARE_EDITION || Math.random() >= RARE_ODDS) return undefined
-  return { art: RARE_ARTS[serial % RARE_ARTS.length], edition: dropped + 1, of: RARE_EDITION }
+  const recent = s.tickets
+    .filter((t) => t.rare)
+    .sort((a, b) => b.mintedAt - a.mintedAt)
+    .map((t) => t.rare as RareDrop)
+  const art = pickFresh(Object.keys(RARE_PERKS) as RareArt[], recent.map((r) => r.art))
+  const pattern = pickFresh(FOIL_PATTERNS, recent.map((r) => r.pattern ?? "zigzag"))
+  return { art, pattern, edition: dropped + 1, of: RARE_EDITION }
+}
+
+/** A random option, skipping the ones dealt most recently (up to half the options). */
+function pickFresh<T>(options: T[], recentFirst: T[]): T {
+  const skip = recentFirst.slice(0, Math.floor(options.length / 2))
+  const pool = options.filter((o) => !skip.includes(o))
+  const choices = pool.length ? pool : options
+  return choices[Math.floor(Math.random() * choices.length)]
 }
 
 function mint(s: DemoState, ev: EventItem, tier: Tier, qty: number, paid: Cents): { state: DemoState; ids: string[] } {
   const ids: string[] = []
   const tickets: Ticket[] = []
   let serial = s.nextSerial
-  const rare = rollRare(s, ev, serial)
+  const rare = rollRare(s, ev)
   for (let i = 0; i < qty; i++) {
     const id = `t-${serial}-${randomHex(4)}`
     ids.push(id)
@@ -251,7 +277,7 @@ export async function listTicket(ticketId: string, price: Cents, summary: TxSumm
   const t = s?.tickets.find((x) => x.id === ticketId)
   const ev = s && t && eventById(s, t.eventId)
   if (!s || !t || !ev) return { ok: false, error: "gone" }
-  const cap = capOf(ev, faceOf(s, t))
+  const cap = capOf(ev, faceOf(s, t), t)
   const above = price > cap
   if (above && !bypassCap) return { ok: false, error: "aboveCap" }
   if (s.wallet.balance < NETWORK_FEE) return { ok: false, error: "insufficient" }
