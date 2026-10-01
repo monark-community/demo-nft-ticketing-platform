@@ -2,6 +2,7 @@ import { rareArt } from "@/components/ticket/rare-art"
 import type { TicketProps } from "@/components/ticket/ticket"
 import { t } from "@/i18n/t"
 import { capPctOf, perksOf } from "@/lib/demo/ops"
+import { RARE_CAP_BONUS } from "@/lib/demo/seed"
 import type { DemoState, Ticket } from "@/lib/demo/types"
 import { clock, eventDate, loc, percent } from "@/lib/format"
 
@@ -28,6 +29,19 @@ export function ticketProps(state: DemoState, ticket: Ticket, copy: AppCopy): Ti
           label: t(tk.rare, { n: ticket.rare.edition, of: ticket.rare.of }),
           perks: perksOf(ticket).map((p) => tk.rarePerks[p]),
           perksLabel: tk.perks,
+          pattern: ticket.rare.pattern,
+          back: {
+            title: tk.perks,
+            perks: perksOf(ticket).map((p) => tk.rarePerks[p]),
+            stub: `${ticket.rare.edition}/${ticket.rare.of}`,
+            facts: [
+              ...(ev
+                ? [{ label: tk.cap, value: t(tk.back.capBoost, { pct: percent(capPctOf(ev, ticket), locale), bonus: RARE_CAP_BONUS }) }]
+                : []),
+              { label: tk.back.art, value: tk.rareArt[ticket.rare.art] },
+              { label: tk.back.foil, value: tk.foilPatterns[ticket.rare.pattern ?? "zigzag"] },
+            ],
+          },
         }
       : undefined,
     rules: ev

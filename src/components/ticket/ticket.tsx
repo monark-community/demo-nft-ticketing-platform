@@ -1,5 +1,6 @@
 import { SparklesIcon } from "lucide-react"
 
+import type { FoilPattern } from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
 
 import { FoilPiece, FoilTilt } from "./foil-tilt"
@@ -15,6 +16,19 @@ export interface TicketRare {
   /** Perks printed as chips under the rules. */
   perks?: string[]
   perksLabel?: string
+  /** Embossed foil pattern; zig-zag when absent. */
+  pattern?: FoilPattern
+  /** The printed back, shown when the ticket is `flipped`. */
+  back?: TicketRareBack
+}
+
+export interface TicketRareBack {
+  title: string
+  /** Perks, one per line. */
+  perks: string[]
+  facts: { label: string; value: string }[]
+  /** Short line on the stub, e.g. the edition "7/50". */
+  stub: string
 }
 
 export interface TicketLabels {
@@ -66,7 +80,11 @@ export interface TicketProps {
   sweep?: boolean
   /** Let touch drags tilt the foil (only where the page needn't scroll under it). */
   captureTouch?: boolean
+  /** Turn a foil ticket over to its printed back (needs `rare.back`). */
+  flipped?: boolean
 }
+
+const face = "col-start-1 row-start-1 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
 
 /**
  * The NFTokenPass ticket: yellow card stock, a main part and a stub joined by a
@@ -95,6 +113,7 @@ export function Ticket({
   rare,
   sweep,
   captureTouch,
+  flipped,
 }: TicketProps) {
   const Heading = headingLevel
   const ink = rare?.ink
@@ -105,6 +124,9 @@ export function Ticket({
         "--color-stock-ink": ink.ink,
         "--color-stock-ink-soft": ink.inkSoft,
         "--color-stock-line": ink.line,
+        // Entry code: the art's dark base on its light ink keeps the matrix high-contrast.
+        "--color-code-ink": ink.stock,
+        "--color-code-paper": ink.ink,
       } as React.CSSProperties)
     : undefined
   // One sheet of art across both pieces, shaded where the type sits (left, and the stub on the right).
@@ -116,11 +138,20 @@ export function Ticket({
           backgroundPosition: "0 0, center",
         }
       : undefined
+  // The back: the same art, toned down evenly so the perk list reads anywhere on it.
+  const backArt: React.CSSProperties | undefined =
+    rare && ink
+      ? {
+          backgroundImage: `linear-gradient(${ink.stock}cc, ${ink.stock}cc), url("${rare.image}")`,
+          backgroundSize: "auto, cover",
+          backgroundPosition: "0 0, center",
+        }
+      : undefined
 
   const card = (
     <div
       className={cn(
-        "paper-drop relative flex flex-col text-stock-ink @[30rem]:flex-row",
+        "paper-drop relative flex h-full flex-col text-stock-ink @[30rem]:flex-row",
         shaking && "animate-shake",
         dimmed && "saturate-[0.35]"
       )}
@@ -132,7 +163,7 @@ export function Ticket({
           compact ? "p-4" : "p-5 @[30rem]:p-6"
         )}
       >
-        {rare && <FoilPiece art={art} sweep={sweep} />}
+        {rare && <FoilPiece art={art} pattern={rare.pattern} sweep={sweep} />}
         <div className="flex items-center justify-between gap-3">
           {rare ? (
             <span className="label-caps inline-flex items-center gap-1.5">
@@ -218,7 +249,7 @@ export function Ticket({
           tearing && "animate-tear-y @[30rem]:animate-tear"
         )}
       >
-        {rare && <FoilPiece end art={art} sweep={sweep} />}
+        {rare && <FoilPiece end art={art} pattern={rare.pattern} sweep={sweep} />}
         <div className="min-w-0 flex-1 @[30rem]:flex-none">
           <p className="label-caps text-stock-ink-soft">{labels.section}</p>
           <p className="truncate font-display text-2xl leading-tight font-extrabold uppercase">{section}</p>
@@ -235,9 +266,92 @@ export function Ticket({
     </div>
   )
 
+  if (!rare) {
+    return (
+      <div className={cn("@container w-full", className)} style={inkVars}>
+        {card}
+      </div>
+    )
+  }
+
+  // A foil with a printed back: both faces share one cell and turn over together.
+  const sides = rare.back ? (
+    <div className="[perspective:1400px]">
+      <div
+        className="grid transition-transform duration-700 ease-[cubic-bezier(0.3,1.25,0.5,1)] [transform-style:preserve-3d]"
+        style={{ transform: flipped ? "rotateY(180deg)" : undefined }}
+      >
+        <div className={face} aria-hidden={flipped || undefined}>
+          {card}
+        </div>
+        <div className={cn(face, "[transform:rotateY(180deg)]")} aria-hidden={!flipped}>
+          <RareBackCard back={rare.back} art={backArt} pattern={rare.pattern} compact={compact} />
+        </div>
+      </div>
+    </div>
+  ) : (
+    card
+  )
+
   return (
     <div className={cn("@container w-full", className)} style={inkVars}>
-      {rare ? <FoilTilt captureTouch={captureTouch}>{card}</FoilTilt> : card}
+      <FoilTilt captureTouch={captureTouch}>{sides}</FoilTilt>
+    </div>
+  )
+}
+
+/** The back of a foil ticket: its perks and what makes it rare, on the same art, more heavily shaded. */
+function RareBackCard({
+  back,
+  art,
+  pattern,
+  compact,
+}: {
+  back: TicketRareBack
+  art?: React.CSSProperties
+  pattern?: FoilPattern
+  compact?: boolean
+}) {
+  return (
+    <div className="paper-drop relative flex h-full flex-col text-stock-ink @[30rem]:flex-row">
+      <div
+        className={cn(
+          "relative min-w-0 flex-1 overflow-hidden rounded-t-lg bg-stock notch-b @[30rem]:rounded-l-lg @[30rem]:rounded-tr-none @[30rem]:notch-r",
+          compact ? "p-4" : "p-5 @[30rem]:p-6"
+        )}
+      >
+        <FoilPiece art={art} pattern={pattern} />
+        <p className="label-caps inline-flex items-center gap-1.5">
+          <SparklesIcon className="size-3.5" aria-hidden="true" />
+          {back.title}
+        </p>
+        <ul className={cn("mt-3 space-y-1.5", compact ? "text-base" : "text-lg @[30rem]:text-xl")}>
+          {back.perks.map((p) => (
+            <li key={p} className="flex items-center gap-2 font-display leading-tight font-extrabold uppercase">
+              <SparklesIcon className="size-4 shrink-0 text-stock-ink-soft" aria-hidden="true" />
+              {p}
+            </li>
+          ))}
+        </ul>
+        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t-[1.5px] border-dashed border-stock-ink/50 pt-3 text-xs @[30rem]:grid-cols-3">
+          {back.facts.map((f) => (
+            <div key={f.label}>
+              <dt className="label-caps text-stock-ink-soft">{f.label}</dt>
+              <dd className="font-semibold">{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div
+        className={cn(
+          "relative flex shrink-0 items-center justify-center gap-3 overflow-hidden rounded-b-lg border-t-2 border-dashed border-stock-line bg-stock notch-t @[30rem]:w-44 @[30rem]:flex-col @[30rem]:rounded-tr-lg @[30rem]:rounded-b-none @[30rem]:rounded-br-lg @[30rem]:border-t-0 @[30rem]:border-l-2 @[30rem]:notch-l",
+          compact ? "p-4" : "p-5"
+        )}
+      >
+        <FoilPiece end art={art} pattern={pattern} />
+        <SparklesIcon className="size-10" aria-hidden="true" />
+        <span className="font-display text-3xl font-extrabold tabular-nums">{back.stub}</span>
+      </div>
     </div>
   )
 }

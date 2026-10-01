@@ -1,5 +1,5 @@
 import { randomAddress, txHash } from "./ids"
-import type { Address, DemoState, EventItem, Guest, LedgerLine, Listing, Organizer, RareArt, RarePerk, Souvenir, Ticket } from "./types"
+import type { Address, DemoState, EventItem, FoilPattern, Guest, LedgerLine, Listing, Organizer, RareArt, RarePerk, Souvenir, Ticket } from "./types"
 
 /**
  * The starting world. All artists, venues, teams and people are invented.
@@ -16,6 +16,8 @@ export const RARE_ODDS = 1
 export const RARE_EDITION = 50
 /** Percentage points a foil adds to the show's resale cap (110 % of face becomes 135 %). */
 export const RARE_CAP_BONUS = 25
+/** Foil patterns a drop can be embossed with. */
+export const FOIL_PATTERNS: FoilPattern[] = ["zigzag", "waves", "lattice", "scales", "rings", "glitter"]
 /** Perks that come with each foil artwork. */
 export const RARE_PERKS: Record<RareArt, RarePerk[]> = {
   afterglow: ["earlyEntry", "merch"],

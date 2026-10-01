@@ -24,7 +24,7 @@ import { useApp, type AppCopy } from "./app-context"
 import { dateParts, isTonight } from "./box-office"
 import { errorText, FlowFeedback, livePending, useConnect, type FlowState } from "./feedback"
 import { Poster } from "./poster"
-import { RareDropReveal } from "./rare-drop"
+import { FlipButton, RareDropReveal } from "./rare-drop"
 import { ticketProps } from "./ticket-props"
 
 function varsFor(state: DemoState, ev: EventItem, error: TxError, need: number) {
@@ -149,6 +149,7 @@ function Checkout({ ev }: { ev: EventItem }) {
   /** A rare drop waiting to be revealed: the minted ticket stays hidden here until it's put away. */
   const [drop, setDrop] = useState<string | null>(null)
   const [justRevealed, setJustRevealed] = useState(false)
+  const [flipped, setFlipped] = useState(false)
   const mintedRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (justRevealed) mintedRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" })
@@ -319,12 +320,16 @@ function Checkout({ ev }: { ev: EventItem }) {
                 {...ticketProps(state, minted, copy)}
                 compact
                 sweep={justRevealed}
+                flipped={flipped}
                 stamp={{ label: tk.stamps.minted, tone: "ink", animate: true }}
               />
-              <Link href={href(locale, "/app/wallet")} className="inline-flex min-h-11 items-center gap-2 font-semibold underline-offset-4 hover:underline">
-                {e.seeWallet}
-                <ArrowRightIcon className="size-4" aria-hidden="true" />
-              </Link>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                {minted.rare && <FlipButton flipped={flipped} onFlip={() => setFlipped((f) => !f)} labels={tk} />}
+                <Link href={href(locale, "/app/wallet")} className="inline-flex min-h-11 items-center gap-2 font-semibold underline-offset-4 hover:underline">
+                  {e.seeWallet}
+                  <ArrowRightIcon className="size-4" aria-hidden="true" />
+                </Link>
+              </div>
             </div>
           )}
         </div>

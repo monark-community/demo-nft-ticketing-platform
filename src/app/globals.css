@@ -69,6 +69,9 @@
   --color-stock-ink: #1c1814;
   --color-stock-ink-soft: #4a3f2c;
   --color-stock-line: #c9a032;
+  /* The entry code's modules and paper; a foil swaps them for its art's dark base on its light ink. */
+  --color-code-ink: #1c1814;
+  --color-code-paper: #ffffff;
 }
 
 /* Light: card stock and press ink. */
@@ -409,16 +412,11 @@
 }
 
 /*
- * Embossed zig-zag foil: two scales of chevron lines, lit in diagonal bands
- * that slide as the light moves, so rows flash brighter and dimmer across the card.
+ * Embossed foil pattern, lit in diagonal bands that slide as the light moves,
+ * so the lines flash brighter and dimmer across the card. The pattern itself
+ * comes from a .foil-<pattern> class below (each drop draws one at random).
  */
 @utility foil-texture {
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='7' viewBox='0 0 14 7'%3E%3Cpath d='M0 5.5 3.5 1.5 7 5.5 10.5 1.5 14 5.5' fill='none' stroke='white' stroke-width='0.9'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cpath d='M0 16 10 4 20 16 30 4 40 16' fill='none' stroke='white' stroke-width='1.4' opacity='0.7'/%3E%3C/svg%3E");
-  background-size:
-    14px 7px,
-    40px 20px;
   mix-blend-mode: overlay;
   opacity: 0.85;
   -webkit-mask-image:
@@ -433,6 +431,54 @@
   mask-position: var(--foil-x) var(--foil-y), 0 0;
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
+}
+
+/* Foil patterns: white line work at two scales, blended into the art by .foil-texture. */
+.foil-zigzag {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='7' viewBox='0 0 14 7'%3E%3Cpath d='M0 5.5 3.5 1.5 7 5.5 10.5 1.5 14 5.5' fill='none' stroke='white' stroke-width='0.9'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cpath d='M0 16 10 4 20 16 30 4 40 16' fill='none' stroke='white' stroke-width='1.4' opacity='0.7'/%3E%3C/svg%3E");
+  background-size:
+    14px 7px,
+    40px 20px;
+}
+.foil-waves {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8'%3E%3Cpath d='M0 4 Q6 0 12 4 T24 4' fill='none' stroke='white' stroke-width='0.9'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='28' viewBox='0 0 80 28'%3E%3Cpath d='M0 14 Q20 2 40 14 T80 14' fill='none' stroke='white' stroke-width='1.5' opacity='0.7'/%3E%3C/svg%3E");
+  background-size:
+    24px 8px,
+    80px 28px;
+}
+.foil-lattice {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M0 12 12 0 M0 0 12 12' fill='none' stroke='white' stroke-width='0.7'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M24 4 44 24 24 44 4 24Z' fill='none' stroke='white' stroke-width='1.4' opacity='0.7'/%3E%3C/svg%3E");
+  background-size:
+    12px 12px,
+    48px 48px;
+}
+.foil-scales {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M0 8 A8 8 0 0 1 16 8 M-8 16 A8 8 0 0 1 8 16 M8 16 A8 8 0 0 1 24 16' fill='none' stroke='white' stroke-width='0.9'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24'%3E%3Cpath d='M0 24 A24 24 0 0 1 48 24' fill='none' stroke='white' stroke-width='1.3' opacity='0.6'/%3E%3C/svg%3E");
+  background-size:
+    16px 16px,
+    48px 24px;
+}
+/* Concentric rings centred on the light, so they ripple out from the pointer. */
+.foil-rings {
+  background-image:
+    repeating-radial-gradient(circle at var(--foil-x) var(--foil-y), rgb(255 255 255 / 0.9) 0 1px, transparent 1.5px 7px),
+    repeating-radial-gradient(circle at var(--foil-x) var(--foil-y), transparent 0 26px, rgb(255 255 255 / 0.6) 27px 28.5px, transparent 29.5px 40px);
+}
+.foil-glitter {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cg fill='white'%3E%3Ccircle cx='3' cy='4' r='0.9'/%3E%3Ccircle cx='14' cy='2' r='0.6'/%3E%3Ccircle cx='9' cy='11' r='1.1'/%3E%3Ccircle cx='19' cy='13' r='0.7'/%3E%3Ccircle cx='5' cy='18' r='0.6'/%3E%3Ccircle cx='15' cy='20' r='0.9'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M15 9 16.5 13.5 21 15 16.5 16.5 15 21 13.5 16.5 9 15 13.5 13.5Z M44 38 45 41 48 42 45 43 44 46 43 43 40 42 43 41Z' fill='white' opacity='0.8'/%3E%3C/svg%3E");
+  background-size:
+    22px 22px,
+    60px 60px;
 }
 
 /* The light catching the card where the pointer is. */
@@ -469,6 +515,128 @@
 }
 @utility animate-rare-bob {
   animation: rare-bob 2.4s ease-in-out infinite;
+}
+
+/* The reveal's charge: the sealed card shakes harder and harder before it bursts. */
+@keyframes rare-charge {
+  0% {
+    transform: translate(0, 0) rotate(0) scale(1);
+  }
+  15% {
+    transform: translate(-1px, 1px) rotate(-0.6deg) scale(1.01);
+  }
+  30% {
+    transform: translate(2px, -1px) rotate(0.9deg) scale(1.02);
+  }
+  45% {
+    transform: translate(-3px, 2px) rotate(-1.4deg) scale(1.03);
+  }
+  60% {
+    transform: translate(4px, -2px) rotate(1.9deg) scale(1.04);
+  }
+  75% {
+    transform: translate(-5px, 3px) rotate(-2.5deg) scale(1.05);
+  }
+  90% {
+    transform: translate(6px, -3px) rotate(3deg) scale(1.07);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0) scale(1.08);
+  }
+}
+@utility animate-rare-charge {
+  animation: rare-charge 650ms cubic-bezier(0.5, 0, 1, 1) both;
+}
+
+/* A turn and a half with a pop, landing on the front face (which sits at 180deg). */
+@keyframes rare-spin {
+  0% {
+    transform: rotateY(0) scale(1.08);
+  }
+  45% {
+    transform: rotateY(380deg) scale(1.16);
+  }
+  80% {
+    transform: rotateY(552deg) scale(0.98);
+  }
+  100% {
+    transform: rotateY(540deg) scale(1);
+  }
+}
+@utility animate-rare-spin {
+  animation: rare-spin 1000ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/*
+ * The reveal's light lives on the dialog overlay, which covers the screen behind
+ * the card: ::after is the glow in the art's colour (--rare-glow), ::before the
+ * burst of rays. Unlayered so it wins over the overlay's own enter animation.
+ */
+.rare-overlay::before,
+.rare-overlay::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+.rare-overlay::before {
+  inset: -50%;
+  background: repeating-conic-gradient(from 0deg, rgb(255 246 214 / 0.28) 0deg 3deg, transparent 3deg 12deg);
+  -webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 50%);
+  mask-image: radial-gradient(circle at center, #000 0%, transparent 50%);
+}
+.rare-overlay::after {
+  inset: 0;
+  background: radial-gradient(ellipse 50% 38% at 50% 52%, var(--rare-glow, #f4c542) 0%, transparent 70%);
+}
+@keyframes rare-glow {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  70% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.75;
+  }
+}
+@keyframes rare-rays {
+  0% {
+    opacity: 0;
+    transform: scale(0.35) rotate(0);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.18;
+    transform: scale(1.35) rotate(28deg);
+  }
+}
+@keyframes rare-flash {
+  0% {
+    background-color: rgb(255 250 235 / 0.95);
+  }
+  100% {
+    background-color: rgb(13 10 8 / 0.9);
+  }
+}
+.rare-overlay.rare-charging::after {
+  animation: rare-glow 650ms ease-in both;
+}
+.rare-overlay.rare-burst::after,
+.rare-overlay.rare-revealed::after {
+  opacity: 0.3;
+}
+.rare-overlay.rare-burst::before,
+.rare-overlay.rare-revealed::before {
+  animation: rare-rays 1400ms cubic-bezier(0.15, 0.8, 0.25, 1) both;
+}
+.rare-overlay.rare-burst {
+  animation: rare-flash 550ms ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
