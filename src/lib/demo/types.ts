@@ -65,6 +65,16 @@ export type PosterTone = "ink" | "stock" | "brick" | "teal" | "cream"
 
 export type TicketStatus = "held" | "listed" | "used"
 
+/** Artwork printed on a rare foil ticket (see components/ticket/rare-art.ts). */
+export type RareArt = "afterglow" | "marquee" | "aurora"
+
+/** A rare drop: the ticket was printed in foil with custom art, numbered within a small edition. */
+export interface RareDrop {
+  art: RareArt
+  edition: number
+  of: number
+}
+
 export interface Ticket {
   id: string
   /** Serial printed on the ticket, e.g. "0412". */
@@ -80,6 +90,8 @@ export interface Ticket {
   status: TicketStatus
   usedAt?: number
   mintedAt: number
+  /** Set when the mint dropped a rare foil edition. */
+  rare?: RareDrop
 }
 
 export interface Listing {

@@ -69,6 +69,12 @@ const fr: Dictionary = {
       resold: "Revendu au plafond",
     },
     life: "La vie de ce billet",
+    rare: "Rare métallisé · {n}/{of}",
+    rareArt: {
+      afterglow: "Crépuscule",
+      marquee: "Marquise",
+      aurora: "Aurore boréale",
+    },
   },
   categories: {
     all: "Tout",
@@ -564,6 +570,19 @@ const fr: Dictionary = {
       notFoundTitle: "Ce spectacle est introuvable.",
       notFoundBody: "Il a peut-être été créé dans un autre navigateur, ou la démo a été réinitialisée.",
       past: "Ce spectacle a commencé. Les billets ne sont plus en vente.",
+      rare: {
+        title: "Billet rare",
+        sealed: "Un de vos billets est sorti de la presse pas comme les autres.",
+        reveal: "Cliquez pour le découvrir",
+        revealLabel: "Découvrir votre billet rare",
+        revealedTitle: "Édition métallisée · {art}",
+        revealedBody: "Le billet {serial} est le numéro {n} sur {of} billets métallisés pour {event}, imprimés avec une illustration exclusive. Il fonctionne à la porte comme n'importe quel billet et se revend sous le même plafond.",
+        odds: "Les organisateurs peuvent imprimer une petite édition métallisée qui sort au hasard. Dans cette démo, chaque achat en fait sortir une.",
+        hint: "Passez le pointeur ou le doigt dessus pour voir les reflets.",
+        done: "Cliquez pour le ranger dans votre portefeuille",
+        doneLabel: "Ranger le billet métallisé dans votre portefeuille",
+        close: "Fermer",
+      },
     },
     walletView: {
       title: "Mes billets",

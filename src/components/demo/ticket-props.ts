@@ -1,3 +1,4 @@
+import { rareArt } from "@/components/ticket/rare-art"
 import type { TicketProps } from "@/components/ticket/ticket"
 import { t } from "@/i18n/t"
 import type { DemoState, Ticket } from "@/lib/demo/types"
@@ -20,6 +21,9 @@ export function ticketProps(state: DemoState, ticket: Ticket, copy: AppCopy): Ti
     seat: ticket.seat,
     serial: ticket.serial,
     labels: tk,
+    rare: ticket.rare
+      ? { ...rareArt(ticket.rare.art), label: t(tk.rare, { n: ticket.rare.edition, of: ticket.rare.of }) }
+      : undefined,
     rules: ev
       ? {
           cap: t(tk.capValue, { pct: percent(ev.rules.resaleCapPct, locale) }),

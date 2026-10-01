@@ -67,6 +67,12 @@ const en = {
       resold: "Resold at cap",
     },
     life: "The life of this ticket",
+    rare: "Rare foil · {n}/{of}",
+    rareArt: {
+      afterglow: "Afterglow",
+      marquee: "Marquee",
+      aurora: "Aurora",
+    },
   },
   categories: {
     all: "All",
@@ -561,6 +567,19 @@ const en = {
       notFoundTitle: "We can't find this show.",
       notFoundBody: "It may have been created in another browser, or the demo was reset.",
       past: "This show has started. Tickets are no longer on sale.",
+      rare: {
+        title: "Rare drop",
+        sealed: "One of your tickets came off the press different.",
+        reveal: "Click to reveal",
+        revealLabel: "Reveal your rare drop",
+        revealedTitle: "Foil edition · {art}",
+        revealedBody: "Ticket {serial} is number {n} of {of} foil tickets for {event}, printed with custom art. It works at the door like any other ticket and resells under the same cap.",
+        odds: "Organizers can print a small foil edition that drops at random. In this demo, every purchase drops one.",
+        hint: "Move your pointer or finger over it to catch the light.",
+        done: "Click to put it in your wallet",
+        doneLabel: "Put the foil ticket in your wallet",
+        close: "Close",
+      },
     },
     walletView: {
       title: "My tickets",

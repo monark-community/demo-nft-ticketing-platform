@@ -15,6 +15,7 @@ This repository is the **interactive demo** of NFTokenPass, an independent ticke
 | Flow | Where |
 |-|-|
 | Buy a ticket (with per-wallet limit, sold-out tiers, rejected and failed transactions) | `/app`, `/app/events/[id]` |
+| Open a rare drop: every purchase in the demo drops a numbered foil ticket with custom art, revealed in a popup, that tilts and catches the light under your pointer | `/app/events/[id]`, `/app/wallet` |
 | Resell within the organizer's cap, watch the royalty split, try to list above the cap | `/app/wallet` |
 | Show the rotating entry code, then scan guests at the door (admitted, expired screenshot, already used, wrong event, not the holder, forged) | `/app/wallet`, `/app/door` |
 | Create an event with tiers and rules, and follow sales and resale royalties | `/app/organizer` |
@@ -51,7 +52,7 @@ All demo logic lives behind a small typed layer in `src/lib/demo/`, so it could 
 | `seed.ts` | The starting world: six invented shows in Montréal and Québec City, dated relative to now (one is always tonight), a demo wallet with 250.00 tUSDC and three tickets, resale listings, and guests queuing at tonight's door. |
 | `store.ts` | An external store persisted to `localStorage` (every access in try/catch), plus the promise behind the simulated wallet prompt. |
 | `chain.ts` | Every write: wallet prompt → pending with a hash and 1.2–2.6 s latency → confirmed or failed. Honours the demo controls (fail the next transaction, slow network). |
-| `ops.ts` | The rules: buying within supply and the per-wallet limit, listing at or under the cap, royalty on every resale, deploying events, door check-in and souvenirs. |
+| `ops.ts` | The rules: buying within supply and the per-wallet limit, rare foil drops (`RARE_ODDS` and `RARE_EDITION` in `seed.ts`; the demo sets the odds to 1), listing at or under the cap, royalty on every resale, deploying events, door check-in and souvenirs. |
 | `code.ts` | Rotating entry codes: a signature over ticket, holder and 20-second window, and the door's verification (expired, used, wrong event, not the holder, forged). |
 
 The "Demo controls" button in the app bar can force the next transaction to fail, slow the network, or **reset the demo**. State older than 12 hours is reseeded so "tonight" stays tonight.
@@ -62,7 +63,7 @@ The "Demo controls" button in the app bar can force the next transaction to fail
 src/
   app/[locale]/          pages: home, how-it-works, credits, pricing (unlinked), app/*, 404, OG image
   components/brand/      logo mark and wordmark
-  components/ticket/     ticket, stamp, entry code, resale rail
+  components/ticket/     ticket (and its foil variant: art, tilt), stamp, entry code, resale rail
   components/demo/       box office, event, wallet, door, organizer, wallet prompt, demo controls
   components/site/       header, footer, locale switch, theme
   components/ui/         shadcn/ui and Monark registry components (re-themed)
