@@ -19,7 +19,6 @@ export function FoilPiece({
   art,
   pattern = "zigzag",
   glare = true,
-  sweep,
 }: {
   end?: boolean
   /** Embossed foil pattern (a `.foil-<pattern>` class in globals.css). */
@@ -27,7 +26,6 @@ export function FoilPiece({
   /** Background of the card's art layer (painted under the piece's content). */
   art?: React.CSSProperties
   glare?: boolean
-  sweep?: boolean
 }) {
   const box = cn(
     "pointer-events-none absolute h-[var(--card-h,100%)] w-[var(--card-w,100%)]",
@@ -39,7 +37,6 @@ export function FoilPiece({
       <span aria-hidden="true" className={cn(box, "foil-sheen")} />
       <span aria-hidden="true" className={cn(box, "foil-texture", `foil-${pattern}`)} />
       {glare && <span aria-hidden="true" className={cn(box, "foil-glare")} />}
-      {sweep && <span aria-hidden="true" className={cn(box, "animate-foil-sweep")} />}
     </>
   )
 }
@@ -55,6 +52,7 @@ export function FoilTilt({
   className,
   max = 9,
   captureTouch = false,
+  paused = false,
 }: {
   children: React.ReactNode
   className?: string
@@ -62,8 +60,20 @@ export function FoilTilt({
   max?: number
   /** Claim touch drags for the tilt (only where the page doesn't need to scroll under it). */
   captureTouch?: boolean
+  /** Hold still (e.g. while the card is being spun by something else). */
+  paused?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Paused: drop any tilt in progress so the card is square to whatever moves it.
+    const el = ref.current
+    if (!paused || !el) return
+    delete el.dataset.tracking
+    el.style.removeProperty("--foil-x")
+    el.style.removeProperty("--foil-y")
+    el.style.transform = ""
+  }, [paused])
 
   useEffect(() => {
     const el = ref.current
@@ -79,7 +89,7 @@ export function FoilTilt({
 
   function move(e: React.PointerEvent<HTMLDivElement>) {
     const el = ref.current
-    if (!el) return
+    if (!el || paused) return
     const r = el.getBoundingClientRect()
     const x = clamp((e.clientX - r.left) / r.width)
     const y = clamp((e.clientY - r.top) / r.height)

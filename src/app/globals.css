@@ -487,22 +487,6 @@
   mix-blend-mode: overlay;
 }
 
-/* One bright pass across the card when it's revealed. */
-@keyframes foil-sweep {
-  from {
-    background-position: -120% 0;
-  }
-  to {
-    background-position: 220% 0;
-  }
-}
-@utility animate-foil-sweep {
-  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.45) 50%, transparent 65%) no-repeat;
-  background-size: 60% 100%;
-  mix-blend-mode: overlay;
-  animation: foil-sweep 1100ms cubic-bezier(0.4, 0, 0.2, 1) 250ms both;
-}
-
 /* The sealed rare drop waits, bobbing. */
 @keyframes rare-bob {
   0%,
@@ -549,23 +533,35 @@
 }
 
 /* A turn and a half with a pop, landing on the front face (which sits at 180deg). */
+/*
+ * A turn and a half in one eased segment, landing on the front face (at 180deg).
+ * Easing applies per keyframe segment, so intermediate rotation keyframes made
+ * the card stall halfway and start again; the pop is a separate `scale`
+ * animation so it can't touch the rotation.
+ */
 @keyframes rare-spin {
-  0% {
-    transform: rotateY(0) scale(1.08);
+  from {
+    transform: rotateY(0);
   }
-  50% {
-    transform: rotateY(300deg) scale(1.12);
-  }
-  88% {
-    transform: rotateY(548deg) scale(0.99);
-  }
-  100% {
-    transform: rotateY(540deg) scale(1);
+  to {
+    transform: rotateY(540deg);
   }
 }
-/* 1.5 s, eased in and out, so the faces don't strobe past each other. */
+@keyframes rare-pop {
+  0% {
+    scale: 1.08;
+  }
+  35% {
+    scale: 1.13;
+  }
+  100% {
+    scale: 1;
+  }
+}
 @utility animate-rare-spin {
-  animation: rare-spin 1500ms cubic-bezier(0.45, 0, 0.25, 1) both;
+  animation:
+    rare-spin 1500ms cubic-bezier(0.3, 0.1, 0.15, 1) both,
+    rare-pop 1500ms cubic-bezier(0.3, 0.1, 0.15, 1) both;
 }
 
 /*

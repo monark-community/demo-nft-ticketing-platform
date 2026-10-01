@@ -15,5 +15,3 @@ export function useMediaQuery(query: string): boolean {
   )
 }
 
-/** The app's desktop layout: inline checkout, top tabs, resale popover (Tailwind `lg`). */
-export const DESKTOP = "(min-width: 1024px)"

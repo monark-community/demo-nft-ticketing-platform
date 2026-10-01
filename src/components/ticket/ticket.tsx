@@ -77,8 +77,8 @@ export interface TicketProps {
   headingLevel?: "h2" | "h3" | "p"
   /** Print it as a rare foil: custom art, foil that follows the pointer, and tilt. */
   rare?: TicketRare
-  /** Pass a bright sweep across the foil once (just revealed). */
-  sweep?: boolean
+  /** Hold the foil tilt still (e.g. while the card is spun by its container). */
+  tiltPaused?: boolean
   /** Let touch drags tilt the foil (only where the page needn't scroll under it). */
   captureTouch?: boolean
   /** Turn a foil ticket over to its printed back (needs `rare.back`). */
@@ -112,7 +112,7 @@ export function Ticket({
   className,
   headingLevel = "p",
   rare,
-  sweep,
+  tiltPaused,
   captureTouch,
   flipped,
 }: TicketProps) {
@@ -164,7 +164,7 @@ export function Ticket({
           compact ? "p-4" : "p-5 @[30rem]:p-6"
         )}
       >
-        {rare && <FoilPiece art={art} pattern={rare.pattern} sweep={sweep} />}
+        {rare && <FoilPiece art={art} pattern={rare.pattern} />}
         <div className="flex items-center justify-between gap-3">
           {rare ? (
             <span className="label-caps inline-flex items-center gap-1.5">
@@ -250,7 +250,7 @@ export function Ticket({
           tearing && "animate-tear-y @[30rem]:animate-tear"
         )}
       >
-        {rare && <FoilPiece end art={art} pattern={rare.pattern} sweep={sweep} />}
+        {rare && <FoilPiece end art={art} pattern={rare.pattern} />}
         <div className="min-w-0 flex-1 @[30rem]:flex-none">
           <p className="label-caps text-stock-ink-soft">{labels.section}</p>
           <p className="truncate font-display text-2xl leading-tight font-extrabold uppercase">{section}</p>
@@ -296,7 +296,7 @@ export function Ticket({
 
   return (
     <div className={cn("@container w-full", className)} style={inkVars}>
-      <FoilTilt captureTouch={captureTouch}>{sides}</FoilTilt>
+      <FoilTilt captureTouch={captureTouch} paused={tiltPaused}>{sides}</FoilTilt>
     </div>
   )
 }

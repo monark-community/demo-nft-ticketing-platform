@@ -145,12 +145,12 @@ export function RareDropReveal({ ticket, onDone }: { ticket: TicketItem; onDone:
               className={cn(face, "flex items-center", phase === "sealed" && "animate-rare-bob", phase === "charging" && "animate-rare-charge")}
               aria-hidden={revealed}
             >
-              <Sealed label={r.title} pattern={ticket.rare.pattern} charging={phase === "charging"} />
+              <Sealed label={r.title} pattern={ticket.rare.pattern} charging={phase === "charging"} paused={phase !== "sealed"} />
             </div>
             <div className={cn(face, "flex items-center [transform:rotateY(180deg)]")} aria-hidden={!revealed}>
               <Ticket
                 {...ticketProps(state, ticket, copy)}
-                sweep={revealed}
+                tiltPaused={!revealed}
                 captureTouch
                 flipped={flipped}
                 stamp={{ label: copy.tk.stamps.foil, tone: "ink", animate: revealed, hidden: !revealed }}
@@ -201,10 +201,10 @@ export function FlipButton({
 }
 
 /** The face-down drop: ticket-shaped, ink black, foil already moving under the question mark. */
-function Sealed({ label, pattern, charging }: { label: string; pattern?: FoilPattern; charging?: boolean }) {
+function Sealed({ label, pattern, charging, paused }: { label: string; pattern?: FoilPattern; charging?: boolean; paused?: boolean }) {
   return (
     <div className={cn("@container w-full", charging && "[&_.foil-sheen]:opacity-90 [&_.foil-texture]:opacity-100")}>
-      <FoilTilt captureTouch>
+      <FoilTilt captureTouch paused={paused}>
         <div className="paper-drop relative flex flex-col text-[#f4c542] @[30rem]:flex-row">
           <div className="relative flex min-h-56 min-w-0 flex-1 flex-col justify-between rounded-t-lg bg-[#1c1814] p-6 notch-b @[30rem]:rounded-l-lg @[30rem]:rounded-tr-none @[30rem]:notch-r">
             <FoilPiece pattern={pattern} />

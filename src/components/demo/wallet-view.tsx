@@ -10,14 +10,13 @@ import { ResaleRail } from "@/components/ticket/resale-rail"
 import { Ticket } from "@/components/ticket/ticket"
 import { Button } from "@/components/ui/button"
 import { NftCard } from "@/components/ui/nft-card"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { capOf, capPctOf, cancelListing, eventById, faceOf, faucet, listTicket, median, recentSales, royaltyOf, simulateBuyer, yourTickets } from "@/lib/demo/ops"
 import { NETWORK_FEE } from "@/lib/demo/seed"
-import { DESKTOP, useMediaQuery } from "@/hooks/use-media-query"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import { useNow } from "@/hooks/use-now"
 import { getDemo, useDemo } from "@/lib/demo/store"
 import type { DemoState, Ticket as TicketT } from "@/lib/demo/types"
@@ -144,7 +143,7 @@ function TicketItem({ ticket, state, onSold }: { ticket: TicketT; state: DemoSta
   const [flow, setFlow] = useState<FlowState>({ phase: "idle" })
   const listing = state.listings.find((l) => l.ticketId === ticket.id)
   const busy = flow.phase === "pending"
-  const desktop = useMediaQuery(DESKTOP)
+  const wide = useMediaQuery("(min-width: 768px)")
   if (!ev) return null
 
   async function list(bypass: boolean) {
@@ -259,31 +258,24 @@ function TicketItem({ ticket, state, onSold }: { ticket: TicketT; state: DemoSta
               {showCode ? <EyeOffIcon aria-hidden="true" /> : <EyeIcon aria-hidden="true" />}
               {showCode ? w.hideCode : w.showCode}
             </Button>
-            {desktop ? (
-              <Popover open={reselling} onOpenChange={openResell}>
-                <PopoverTrigger asChild>{resellButton}</PopoverTrigger>
-                <PopoverContent
-                  className="w-[30rem]"
-                  aria-label={t(w.resellTitle, { serial: ticket.serial })}
-                  // The wallet prompt opens on top while listing; keep the form until the transaction settles.
-                  onInteractOutside={(e) => busy && e.preventDefault()}
-                  onFocusOutside={(e) => busy && e.preventDefault()}
-                >
-                  {panel}
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <>
-                {resellButton}
-                <Sheet open={reselling} onOpenChange={openResell}>
-                  <SheetContent side="bottom" closeLabel={w.cancel} className="max-h-[88dvh] overflow-y-auto rounded-t-xl pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-                    <SheetTitle className="sr-only">{t(w.resellTitle, { serial: ticket.serial })}</SheetTitle>
-                    <SheetDescription className="sr-only">{w.market.title}</SheetDescription>
-                    {panel}
-                  </SheetContent>
-                </Sheet>
-              </>
-            )}
+            {resellButton}
+            {/* Resell: the ticket beside the form (stacked on phones). Held open while the wallet prompt signs. */}
+            <Dialog open={reselling} onOpenChange={openResell}>
+              <DialogContent
+                closeLabel={w.cancel}
+                className="max-w-5xl gap-0 p-0 max-sm:max-h-dvh max-sm:rounded-none"
+                onInteractOutside={(e) => busy && e.preventDefault()}
+                onEscapeKeyDown={(e) => busy && e.preventDefault()}
+              >
+                <div className="grid md:grid-cols-[minmax(0,1fr)_27rem]">
+                  <div className="flex items-center bg-muted/60 p-4 pt-12 max-md:border-b sm:p-8 md:border-r">
+                    {/* Phones: the compact ticket, so the form starts on the first screen (the cap is in the form). */}
+                    <Ticket {...ticketProps(state, ticket, copy)} compact={!wide} />
+                  </div>
+                  <div className="p-5 sm:p-6">{panel}</div>
+                </div>
+              </DialogContent>
+            </Dialog>
             {isTonight(ev) && (
               <Button asChild variant="ghost" className="h-11">
                 <Link href={href(locale, "/app/door")}>
@@ -349,7 +341,10 @@ function ResellPanel({
   if (!ev) return null
   return (
     <div className="space-y-5">
-      <h3 className="pr-8 font-display text-2xl font-extrabold uppercase">{t(w.resellTitle, { serial: ticket.serial })}</h3>
+      <div className="pr-8">
+        <DialogTitle className="font-display text-2xl leading-tight font-extrabold uppercase">{t(w.resellTitle, { serial: ticket.serial })}</DialogTitle>
+        <DialogDescription className="mt-1 text-sm text-muted-foreground">{w.resellBody}</DialogDescription>
+      </div>
       <MarketPrices ticket={ticket} state={state} cap={cap} onPick={setPrice} disabled={busy} />
       <ResaleRail
         face={face}
