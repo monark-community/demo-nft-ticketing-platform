@@ -10,6 +10,10 @@ export const YOUR_ADDRESS: Address = "0x4B2f9c3E71A0d58B6e2F1c9D04a7E3b85C61d9F2
 export const STARTING_BALANCE = 250_00
 export const FAUCET_AMOUNT = 200_00
 export const NETWORK_FEE = 4 // 0.04 tUSDC per transaction
+/** Chance that a primary purchase drops a rare foil ticket. A real collection would set this low; the demo always drops one. */
+export const RARE_ODDS = 1
+/** Size of each show's foil edition. */
+export const RARE_EDITION = 50
 
 const HOUR = 3_600_000
 const DAY = 24 * HOUR

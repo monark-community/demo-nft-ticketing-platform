@@ -24,6 +24,8 @@ const T = {
     reject: "Reject",
     buyOne: "Buy 1 ticket",
     bought: /is in your wallet/,
+    rareReveal: "Reveal your rare drop",
+    rareDone: "Put the foil ticket in your wallet",
     showCode: "Show entry code",
     scanNext: "Scan next guest",
     scanMine: "Scan my ticket",
@@ -36,6 +38,8 @@ const T = {
     reject: "Refuser",
     buyOne: "Acheter 1 billet",
     bought: /est dans votre portefeuille/,
+    rareReveal: "Découvrir votre billet rare",
+    rareDone: "Ranger le billet métallisé dans votre portefeuille",
     showCode: "Afficher le code d'entrée",
     scanNext: "Scanner l'invité suivant",
     scanMine: "Scanner mon billet",
@@ -113,6 +117,24 @@ async function connect(page, v, capture) {
   await page.waitForTimeout(500)
 }
 
+/** Every purchase drops a rare foil ticket in the demo: reveal it, tilt it, put it away. */
+async function rareDrop(page, v, capture) {
+  const t = T[v.locale]
+  const card = dialog(page).getByRole("button", { name: t.rareReveal })
+  await card.waitFor({ timeout: 12000 })
+  if (capture) await shot(page, v, "flow1-rare-sealed")
+  await card.click()
+  const done = dialog(page).getByRole("button", { name: t.rareDone })
+  await done.waitFor()
+  await page.waitForTimeout(1500)
+  const box = await done.boundingBox()
+  if (box) await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.2, { steps: 8 })
+  if (capture) await shot(page, v, "flow1-rare-revealed")
+  await done.click()
+  await dialog(page).waitFor({ state: "detached" })
+  await page.waitForTimeout(1600)
+}
+
 async function marketing(page, v) {
   for (const [name, path] of [
     ["home", ""],
@@ -153,8 +175,7 @@ async function appFlows(page, v) {
   await page.getByText("Waiting for the network…").first().waitFor()
   await page.getByText("Waiting for the network…").first().scrollIntoViewIfNeeded()
   await shot(page, v, "flow1-pending")
-  await page.getByText(t.bought).first().waitFor({ timeout: 12000 })
-  await page.waitForTimeout(500)
+  await rareDrop(page, v, true)
   await page.getByText(t.bought).first().scrollIntoViewIfNeeded()
   await shot(page, v, "flow1-confirmed")
 
@@ -282,6 +303,7 @@ async function frenchFlow(page, v) {
   await dialog(page).waitFor()
   await shot(page, v, "flow1-buy-prompt")
   await confirm(page, v)
+  await rareDrop(page, v, true)
   await page.getByText(t.bought).first().waitFor({ timeout: 12000 })
   await page.waitForTimeout(500)
   await page.getByText(t.bought).first().scrollIntoViewIfNeeded()
