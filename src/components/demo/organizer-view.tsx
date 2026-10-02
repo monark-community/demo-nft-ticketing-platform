@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { useNow } from "@/hooks/use-now"
+import { rareConfigOf } from "@/lib/demo/ops"
 import { useDemo } from "@/lib/demo/store"
 import { ago, eventDate, money, number } from "@/lib/format"
 
@@ -18,7 +19,7 @@ import { Poster } from "./poster"
 import { dateParts } from "./box-office"
 
 export function OrganizerView() {
-  const { d, locale, categories } = useApp()
+  const { d, locale, categories, tk } = useApp()
   const o = d.organizer
   const state = useDemo()
   const [creating, setCreating] = useState(false)
@@ -82,6 +83,8 @@ export function OrganizerView() {
               const primary = ev.tiers.reduce((n, x) => n + x.sold * x.price, 0)
               const royalties = state.ledger.filter((l) => l.eventId === ev.id).reduce((n, l) => n + l.amount, 0)
               const scanned = state.tickets.filter((x) => x.eventId === ev.id && x.status === "used").length
+              const foil = rareConfigOf(ev)
+              const foils = state.tickets.filter((x) => x.eventId === ev.id && x.rare).length
               const { day, month } = dateParts(ev.startsAt, locale)
               return (
                 <li key={ev.id} className="grid gap-4 rounded-lg border bg-card p-4 sm:grid-cols-[7rem_1fr] sm:p-5">
@@ -109,7 +112,7 @@ export function OrganizerView() {
                       </div>
                       <Progress value={supply ? (sold / supply) * 100 : 0} aria-label={`${o.sold} ${sold} / ${supply}`} className="h-2 bg-muted" />
                     </div>
-                    <dl className="grid grid-cols-3 gap-3 border-t border-dashed pt-3 text-sm">
+                    <dl className="grid grid-cols-2 gap-3 border-t border-dashed pt-3 text-sm sm:grid-cols-4">
                       <div>
                         <dt className="text-xs text-muted-foreground">{o.primary}</dt>
                         <dd className="font-semibold tabular-nums">{money(primary, locale)}</dd>
@@ -121,6 +124,10 @@ export function OrganizerView() {
                       <div>
                         <dt className="text-xs text-muted-foreground">{o.admitted}</dt>
                         <dd className="font-semibold tabular-nums">{number(scanned, locale)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">{o.foils}</dt>
+                        <dd className="font-semibold tabular-nums">{foil.enabled ? `${number(foils, locale)} / ${number(foil.edition, locale)}` : tk.foilNone}</dd>
                       </div>
                     </dl>
                   </div>
