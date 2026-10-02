@@ -58,6 +58,8 @@ export interface EventItem {
   rules: TicketRules
   /** Contract address of the event's ticket collection. */
   contract: Address
+  /** Foil edition, as set by the organizer at deploy (seeded shows use the defaults). */
+  rare?: RareConfig
   createdByYou?: boolean
 }
 
@@ -70,6 +72,19 @@ export type RareArt = "afterglow" | "marquee" | "aurora" | "vinyl" | "confetti" 
 
 /** What holding a rare foil gets you at the show (see RARE_PERKS in seed.ts). */
 export type RarePerk = "earlyEntry" | "merch" | "soundcheck" | "lounge" | "poster" | "afterparty"
+
+/** The organizer's foil edition for a show. Shows without one use the defaults (see rareConfigOf). */
+export interface RareConfig {
+  enabled: boolean
+  /** How many foils can drop for the show. */
+  edition: number
+  /** Chance a primary purchase drops one, in % (the demo defaults to 100). */
+  oddsPct: number
+  /** Percentage points added to the show's resale cap for foils. */
+  capBonus: number
+  /** Perks for holders; absent means each artwork's own pair. */
+  perks?: RarePerk[]
+}
 
 /** The foil's embossed pattern, drawn independently of the art. */
 export type FoilPattern = "zigzag" | "waves" | "lattice" | "scales" | "rings" | "glitter"

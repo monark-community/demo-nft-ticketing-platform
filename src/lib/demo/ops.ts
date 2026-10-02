@@ -13,6 +13,7 @@ import type {
   Guest,
   L10n,
   RareArt,
+  RareConfig,
   RareDrop,
   RarePerk,
   Ticket,
@@ -45,14 +46,40 @@ export function yourTickets(s: DemoState): Ticket[] {
   return s.tickets.filter((t) => same(t.owner, s.wallet.address))
 }
 
+export interface SoldTicket {
+  ticket: Ticket
+  /** What the buyer paid, and what reached you after the royalty. */
+  price: Cents
+  proceeds: Cents
+  at: number
+}
+
+/** Tickets that passed through your wallet and were resold, newest first (with the sale, when it's in the activity). */
+export function soldTickets(s: DemoState): SoldTicket[] {
+  return s.tickets
+    .filter((t) => !same(t.owner, s.wallet.address) && t.previousOwners.some((o) => same(o, s.wallet.address)))
+    .map((t) => {
+      const ev = eventById(s, t.eventId)
+      const tx = s.txs.find((x) => x.kind === "resaleSold" && x.state === "confirmed" && x.vars.serial === t.serial && x.vars.event === ev?.name)
+      const price = tx ? Number(tx.vars.price) : t.paid
+      return { ticket: t, price, proceeds: tx?.amount ?? price, at: tx?.at ?? t.mintedAt }
+    })
+    .sort((a, b) => b.at - a.at)
+}
+
 /** Tickets your wallet holds for an event (held, listed or used all count toward the limit). */
 export function heldFor(s: DemoState, eventId: string): number {
   return yourTickets(s).filter((t) => t.eventId === eventId).length
 }
 
+/** The show's foil edition: what its organizer set, or the demo defaults. */
+export function rareConfigOf(ev: EventItem): RareConfig {
+  return ev.rare ?? { enabled: true, edition: RARE_EDITION, oddsPct: RARE_ODDS * 100, capBonus: RARE_CAP_BONUS }
+}
+
 /** Resale cap in % of face for a ticket: the show's cap, raised for a rare foil. */
 export function capPctOf(ev: EventItem, t?: Ticket): number {
-  return ev.rules.resaleCapPct + (t?.rare ? RARE_CAP_BONUS : 0)
+  return ev.rules.resaleCapPct + (t?.rare ? rareConfigOf(ev).capBonus : 0)
 }
 
 export function capOf(ev: EventItem, face: Cents, t?: Ticket): Cents {
@@ -91,7 +118,7 @@ export function recentSales(s: DemoState, t: Ticket): { similar: MarketSale[]; f
   const simulate = (foil: boolean, n: number): MarketSale[] => {
     const r = seeded(`${ev.id}:${t.tierId}:${foil ? "foil" : "std"}`)
     const lo = foil ? base : Math.min(96, base)
-    const hi = foil ? base + RARE_CAP_BONUS : base
+    const hi = foil ? base + rareConfigOf(ev).capBonus : base
     return Array.from({ length: n }, (_, i) => ({
       price: Math.round((face * (lo + r() * (hi - lo))) / 100 / 50) * 50,
       at: s.seededAt - (i * 9 + 2 + r() * 6) * 3_600_000,
@@ -120,8 +147,10 @@ export function median(sales: MarketSale[]): Cents | null {
   return p.length % 2 ? p[m] : Math.round((p[m - 1] + p[m]) / 2)
 }
 
-export function perksOf(t: Ticket): RarePerk[] {
-  return t.rare ? RARE_PERKS[t.rare.art] ?? [] : []
+/** A foil's perks: the ones its organizer chose, else its artwork's pair. */
+export function perksOf(t: Ticket, ev?: EventItem): RarePerk[] {
+  if (!t.rare) return []
+  return (ev && rareConfigOf(ev).perks) ?? RARE_PERKS[t.rare.art] ?? []
 }
 
 export function royaltyOf(ev: EventItem, price: Cents): Cents {
@@ -197,15 +226,16 @@ function seatFor(tier: Tier, index: number): string {
  * so each run of the demo turns up different foils.
  */
 function rollRare(s: DemoState, ev: EventItem): RareDrop | undefined {
+  const cfg = rareConfigOf(ev)
   const dropped = s.tickets.filter((t) => t.eventId === ev.id && t.rare).length
-  if (dropped >= RARE_EDITION || Math.random() >= RARE_ODDS) return undefined
+  if (!cfg.enabled || dropped >= cfg.edition || Math.random() * 100 >= cfg.oddsPct) return undefined
   const recent = s.tickets
     .filter((t) => t.rare)
     .sort((a, b) => b.mintedAt - a.mintedAt)
     .map((t) => t.rare as RareDrop)
   const art = pickFresh(Object.keys(RARE_PERKS) as RareArt[], recent.map((r) => r.art))
   const pattern = pickFresh(FOIL_PATTERNS, recent.map((r) => r.pattern ?? "zigzag"))
-  return { art, pattern, edition: dropped + 1, of: RARE_EDITION }
+  return { art, pattern, edition: dropped + 1, of: cfg.edition }
 }
 
 /** A random option, skipping the ones dealt most recently (up to half the options). */
@@ -417,6 +447,7 @@ export interface EventDraft {
   tone: EventItem["tone"]
   tiers: { name: string; price: Cents; supply: number }[]
   rules: TicketRules
+  rare: RareConfig
 }
 
 export function slugify(name: string): string {
@@ -450,6 +481,7 @@ export async function deployEvent(draft: EventDraft, summary: TxSummary): Promis
     tone: draft.tone,
     contract: `0x${randomHex(40)}`,
     rules: draft.rules,
+    rare: draft.rare,
     tiers: draft.tiers.map((t, i) => ({
       id: `tier-${i + 1}`,
       name: t.name.trim(),
