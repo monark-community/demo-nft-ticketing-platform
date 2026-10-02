@@ -23,6 +23,8 @@ const T = {
     confirm: "Confirm",
     reject: "Reject",
     buyOne: "Buy 1 ticket",
+    getTickets: "Get tickets",
+    yourTicket: "Your ticket",
     bought: /is in your wallet/,
     rareReveal: "Reveal your rare drop",
     rareDone: "Put the foil ticket in your wallet",
@@ -37,6 +39,8 @@ const T = {
     confirm: "Confirmer",
     reject: "Refuser",
     buyOne: "Acheter 1 billet",
+    getTickets: "Acheter des billets",
+    yourTicket: "Votre billet",
     bought: /est dans votre portefeuille/,
     rareReveal: "Découvrir votre billet rare",
     rareDone: "Ranger le billet métallisé dans votre portefeuille",
@@ -79,7 +83,14 @@ async function shot(page, v, name, fullPage = false) {
   await page.waitForTimeout(350)
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
   if (overflow > 0) console.log(`  ! horizontal overflow ${overflow}px on ${name}`)
+  // A full-page capture would paint the fixed phone bars where the viewport ended; pin them to the page end instead.
+  const pin = fullPage
+    ? await page.addStyleTag({
+        content: `body{position:relative}[data-bottom-nav]{position:absolute!important;bottom:0!important}[data-bottom-action]{position:absolute!important;bottom:calc(4rem + env(safe-area-inset-bottom))!important}`,
+      })
+    : null
   await page.screenshot({ path: `${OUT}${tag(v)}-${name}.png`, fullPage })
+  if (pin) await pin.evaluate((el) => el.remove())
   console.log("  ✓", `${tag(v)}-${name}`)
 }
 
@@ -107,6 +118,25 @@ const dialog = (page) => page.getByRole("dialog")
 async function confirm(page, v) {
   await dialog(page).getByRole("button", { name: T[v.locale].confirm, exact: true }).click()
 }
+
+/** Below lg the checkout lives in a sheet behind the pinned "Get tickets" bar. */
+const sheetCheckout = (v) => v.w < 1024
+
+/** The Buy button, opening the phone checkout sheet first when needed. */
+async function buyButton(page, v, capture) {
+  const t = T[v.locale]
+  if (sheetCheckout(v)) {
+    await page.getByRole("button", { name: t.getTickets }).click()
+    await dialog(page).waitFor()
+    await page.waitForTimeout(600)
+    if (capture) await shot(page, v, "flow1-buy-sheet")
+    return dialog(page).getByRole("button", { name: t.buyOne })
+  }
+  return page.getByRole("button", { name: t.buyOne })
+}
+
+/** What you just bought, wherever the layout puts it. */
+const yourTicket = (page, v) => page.locator(`section[aria-label="${T[v.locale].yourTicket}"]`).filter({ visible: true }).first()
 
 async function connect(page, v, capture) {
   await page.getByRole("button", { name: T[v.locale].connect }).first().click()
@@ -168,24 +198,25 @@ async function appFlows(page, v) {
   await dialog(page).getByRole("button", { name: t.reject, exact: true }).click()
   await page.waitForTimeout(600)
   await connect(page, v, true)
-  await page.getByRole("button", { name: t.buyOne }).click()
-  await dialog(page).waitFor()
+  await (await buyButton(page, v, true)).click()
+  await page.getByRole("button", { name: t.confirm, exact: true }).waitFor()
   await shot(page, v, "flow1-buy-prompt")
   await confirm(page, v)
   await page.getByText("Waiting for the network…").first().waitFor()
   await page.getByText("Waiting for the network…").first().scrollIntoViewIfNeeded()
   await shot(page, v, "flow1-pending")
   await rareDrop(page, v, true)
-  await page.getByText(t.bought).first().scrollIntoViewIfNeeded()
+  await yourTicket(page, v).scrollIntoViewIfNeeded()
   await shot(page, v, "flow1-confirmed")
 
   // Flow 1 failure: the network drops the next transaction
   await setSetting(page, { failNext: true })
-  await page.getByRole("button", { name: t.buyOne }).click()
+  await (await buyButton(page, v, false)).click()
   await confirm(page, v)
   await page.getByText(/didn't confirm the transaction/).first().waitFor({ timeout: 12000 })
   await page.getByText(/didn't confirm the transaction/).first().scrollIntoViewIfNeeded()
   await shot(page, v, "flow1-failed")
+  if (sheetCheckout(v)) await page.keyboard.press("Escape")
 
   // Flow 1 resale purchase blocked by the per-wallet limit (4 held: 0388, 0389, new one... then limit)
   // Flow 2: resell 0389 within the cap
@@ -196,13 +227,12 @@ async function appFlows(page, v) {
   const t0389 = page.locator("article", { has: page.getByText("0389").first() }).filter({ hasText: "Marée Basse" }).first()
   const item = page.getByRole("article", { name: /0389/ })
   await item.getByRole("button", { name: "Resell" }).click()
-  await item.getByRole("button", { name: "Raise the price" }).click()
-  await page.waitForTimeout(400)
-  await item.getByRole("heading", { level: 3 }).scrollIntoViewIfNeeded()
+  await page.getByRole("button", { name: "Raise the price" }).click()
+  await page.waitForTimeout(500)
   await shot(page, v, "flow2-rail-at-cap")
   void t0389
-  await item.getByRole("button", { name: /^List for/ }).click()
-  await dialog(page).waitFor()
+  await page.getByRole("button", { name: /^List for/ }).click()
+  await page.getByRole("button", { name: T[v.locale].confirm, exact: true }).waitFor()
   await shot(page, v, "flow2-list-prompt")
   await confirm(page, v)
   await page.getByText(/is listed for/).first().waitFor({ timeout: 12000 })
@@ -216,11 +246,13 @@ async function appFlows(page, v) {
   // Flow 2 failure: try to list above the cap
   const item2 = page.getByRole("article", { name: /1022/ })
   await item2.getByRole("button", { name: "Resell" }).click()
-  await item2.getByRole("button", { name: "Try to list above the cap (demo)" }).click()
+  await page.getByRole("button", { name: "Try to list above the cap (demo)" }).click()
   await confirm(page, v)
   await page.getByText(/Price above the resale cap/).first().waitFor({ timeout: 12000 })
   await page.getByText(/Price above the resale cap/).first().scrollIntoViewIfNeeded()
   await shot(page, v, "flow2-above-cap-failed")
+  await page.keyboard.press("Escape")
+  await page.waitForTimeout(400)
 
   // Flow 3: show the entry code, then the door
   const item3 = page.getByRole("article", { name: /0388/ })
@@ -299,14 +331,12 @@ async function frenchFlow(page, v) {
   await shot(page, v, "app-01-box-office", true)
   await page.goto(`${BASE}/fr/app/events/maree-basse`, { waitUntil: "networkidle" })
   await connect(page, v, false)
-  await page.getByRole("button", { name: t.buyOne }).click()
-  await dialog(page).waitFor()
+  await (await buyButton(page, v, true)).click()
+  await page.getByRole("button", { name: t.confirm, exact: true }).waitFor()
   await shot(page, v, "flow1-buy-prompt")
   await confirm(page, v)
   await rareDrop(page, v, true)
-  await page.getByText(t.bought).first().waitFor({ timeout: 12000 })
-  await page.waitForTimeout(500)
-  await page.getByText(t.bought).first().scrollIntoViewIfNeeded()
+  await yourTicket(page, v).scrollIntoViewIfNeeded()
   await shot(page, v, "flow1-confirmed")
   await page.goto(`${BASE}/fr/app/door`, { waitUntil: "networkidle" })
   await page.getByRole("button", { name: t.scanNext }).click()
@@ -319,8 +349,7 @@ async function frenchFlow(page, v) {
   await page.goto(`${BASE}/fr/app/wallet`, { waitUntil: "networkidle" })
   const item = page.getByRole("article", { name: /0389/ })
   await item.getByRole("button", { name: "Revendre" }).click()
-  await page.waitForTimeout(400)
-  await item.getByRole("heading", { level: 3 }).scrollIntoViewIfNeeded()
+  await page.waitForTimeout(600)
   await shot(page, v, "flow2-rail")
 }
 

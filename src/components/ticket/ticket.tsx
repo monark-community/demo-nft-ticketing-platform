@@ -65,7 +65,8 @@ export interface TicketProps {
   rules?: TicketRuleValues
   /** Replaces the stub's default token block, e.g. with the live entry code. */
   stub?: React.ReactNode
-  stamp?: { label: string; tone: StampTone; animate?: boolean }
+  /** `hidden` keeps its space but not its ink, so it can thump in later without the layout moving. */
+  stamp?: { label: string; tone: StampTone; animate?: boolean; hidden?: boolean }
   /** Play the tear: the stub drops away along the perforation. */
   tearing?: boolean
   /** Short shake (refused at the door). */
@@ -78,6 +79,8 @@ export interface TicketProps {
   rare?: TicketRare
   /** Pass a bright sweep across the foil once (just revealed). */
   sweep?: boolean
+  /** Hold the foil tilt still (e.g. while the card is spun by its container). */
+  tiltPaused?: boolean
   /** Let touch drags tilt the foil (only where the page needn't scroll under it). */
   captureTouch?: boolean
   /** Turn a foil ticket over to its printed back (needs `rare.back`). */
@@ -112,6 +115,7 @@ export function Ticket({
   headingLevel = "p",
   rare,
   sweep,
+  tiltPaused,
   captureTouch,
   flipped,
 }: TicketProps) {
@@ -233,7 +237,7 @@ export function Ticket({
           </div>
         )}
         {stamp && (
-          <div key={stamp.label} className="pointer-events-none absolute right-4 bottom-4 @[30rem]:right-6">
+          <div key={stamp.label} className={cn("pointer-events-none absolute right-4 bottom-4 @[30rem]:right-6", stamp.hidden && "invisible")}>
             <Stamp tone={stamp.tone} animate={stamp.animate} size="md" surface="stock">
               {stamp.label}
             </Stamp>
@@ -295,7 +299,7 @@ export function Ticket({
 
   return (
     <div className={cn("@container w-full", className)} style={inkVars}>
-      <FoilTilt captureTouch={captureTouch}>{sides}</FoilTilt>
+      <FoilTilt captureTouch={captureTouch} paused={tiltPaused}>{sides}</FoilTilt>
     </div>
   )
 }

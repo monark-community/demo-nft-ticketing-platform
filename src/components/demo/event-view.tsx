@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeftIcon, ArrowRightIcon, MinusIcon, PlusIcon } from "lucide-react"
+import { ArrowLeftIcon, ArrowRightIcon, MinusIcon, PlusIcon, TicketIcon } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -8,18 +8,20 @@ import { toast } from "sonner"
 import { Stamp } from "@/components/ticket/stamp"
 import { Ticket } from "@/components/ticket/ticket"
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
 import { WalletAddress, WalletAvatar } from "@/components/ui/wallet"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
-import { available, buyCheck, buyPrimary, buyResale, capOf, eventById, heldFor, listingsFor, resaleCheck, royaltyOf, tierOf } from "@/lib/demo/ops"
+import { available, buyCheck, buyPrimary, buyResale, capOf, eventById, heldFor, listingsFor, rareConfigOf, resaleCheck, royaltyOf, tierOf } from "@/lib/demo/ops"
 import { NETWORK_FEE } from "@/lib/demo/seed"
 import { getDemo, useDemo } from "@/lib/demo/store"
-import type { DemoState, EventItem, TxError } from "@/lib/demo/types"
+import type { DemoState, EventItem, Ticket as TicketItem, TxError } from "@/lib/demo/types"
 import { clock, longDate, loc, money, percent } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useNow } from "@/hooks/use-now"
 
+import { BOTTOM_NAV_H } from "./app-bar"
 import { useApp, type AppCopy } from "./app-context"
 import { dateParts, isTonight } from "./box-office"
 import { errorText, FlowFeedback, livePending, useConnect, type FlowState } from "./feedback"
@@ -38,6 +40,8 @@ export function EventView({ id }: { id: string }) {
   const { d, locale, categories } = copy
   const state = useDemo()
   const e = d.event
+  const purchase = usePurchase()
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   if (!state) return <div className="h-[60vh] animate-pulse rounded-lg bg-muted" aria-busy="true" aria-label={d.loading} />
   const ev = eventById(state, id)
@@ -57,6 +61,15 @@ export function EventView({ id }: { id: string }) {
 
   const org = state.organizers.find((o) => o.id === ev.organizerId)
   const { day, month } = dateParts(ev.startsAt, locale)
+  const minted = state.tickets.find((x) => x.id === purchase.ids[0])
+  const pending = !!minted && !!purchase.drop
+
+  function bought(ids: string[], message: string, rareId: string | null) {
+    // From the phone sheet: let it slide away before a rare drop takes the screen.
+    const fromSheet = sheetOpen
+    setSheetOpen(false)
+    purchase.set(ids, message, rareId, fromSheet ? 350 : 0)
+  }
 
   return (
     <div>
@@ -93,25 +106,171 @@ export function EventView({ id }: { id: string }) {
             </div>
           </header>
 
+          {/* Phones: what you just bought comes first, right under the show. */}
+          {minted && !pending && <MintedTicket ticket={minted} purchase={purchase} className="lg:hidden" />}
           <RulesCard ev={ev} copy={copy} />
           <ResaleList ev={ev} />
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <Checkout ev={ev} />
+        <aside className="space-y-6 max-lg:hidden lg:sticky lg:top-24 lg:self-start">
+          {minted && !pending && <MintedTicket ticket={minted} purchase={purchase} />}
+          <Checkout ev={ev} onBought={bought} />
         </aside>
       </div>
+
+      <BuyBar ev={ev} open={sheetOpen} onOpenChange={setSheetOpen} onBought={bought} />
+
+      {minted && purchase.drop === minted.id && (
+        <RareDropReveal
+          key={minted.id}
+          ticket={minted}
+          onDone={() => {
+            purchase.revealed()
+            toast.success(purchase.message)
+          }}
+        />
+      )}
     </div>
+  )
+}
+
+type Purchase = ReturnType<typeof usePurchase>
+
+/**
+ * What was just bought on this page, shared by the inline checkout, the phone
+ * sheet and the purchased-ticket blocks. A rare drop waits behind its reveal
+ * (drop) and is shown, with a sweep, once it's put away.
+ */
+function usePurchase() {
+  const [ids, setIds] = useState<string[]>([])
+  const [message, setMessage] = useState("")
+  const [drop, setDrop] = useState<string | null>(null)
+  const [justRevealed, setJustRevealed] = useState(false)
+  const [flipped, setFlipped] = useState(false)
+  const timer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  return {
+    ids,
+    message,
+    drop,
+    justRevealed,
+    flipped,
+    setFlipped,
+    set(next: string[], msg: string, rareId: string | null, revealAfterMs: number) {
+      setIds(rareId ? [rareId, ...next.filter((x) => x !== rareId)] : next)
+      setMessage(msg)
+      setJustRevealed(false)
+      setFlipped(false)
+      window.clearTimeout(timer.current)
+      if (rareId && revealAfterMs > 0) {
+        setDrop("waiting")
+        timer.current = window.setTimeout(() => setDrop(rareId), revealAfterMs)
+      } else setDrop(rareId)
+    },
+    revealed() {
+      setDrop(null)
+      setJustRevealed(true)
+    },
+  }
+}
+
+/** The ticket just bought, with its wallet link (and Flip for a foil). Sits above the buy menu. */
+function MintedTicket({ ticket, purchase, className }: { ticket: TicketItem; purchase: Purchase; className?: string }) {
+  const copy = useApp()
+  const { d, locale, tk } = copy
+  const state = useDemo() as DemoState
+  const ref = useRef<HTMLElement>(null)
+  useEffect(() => {
+    // Only the copy actually on screen (phone or desktop) scrolls into view.
+    if (purchase.justRevealed && ref.current?.offsetParent) ref.current.scrollIntoView({ block: "nearest", behavior: "smooth" })
+  }, [purchase.justRevealed])
+  return (
+    <section
+      ref={ref}
+      aria-label={d.event.yourTicket}
+      className={cn("space-y-3", purchase.justRevealed && "animate-in duration-500 fade-in-0 zoom-in-90", className)}
+    >
+      <h2 className="label-caps text-muted-foreground">{d.event.yourTicket}</h2>
+      <Ticket
+        {...ticketProps(state, ticket, copy)}
+        compact
+        sweep={purchase.justRevealed}
+        flipped={purchase.flipped}
+        stamp={{ label: tk.stamps.minted, tone: "ink", animate: true }}
+      />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {ticket.rare && <FlipButton flipped={purchase.flipped} onFlip={() => purchase.setFlipped((f) => !f)} labels={tk} />}
+        <Link href={href(locale, "/app/wallet")} className="inline-flex min-h-11 items-center gap-2 font-semibold underline-offset-4 hover:underline">
+          {d.event.seeWallet}
+          <ArrowRightIcon className="size-4" aria-hidden="true" />
+        </Link>
+      </div>
+    </section>
+  )
+}
+
+/**
+ * Phones and tablets: buying is the page's main action, so it stays pinned just
+ * above the bottom bar and opens the checkout in a sheet.
+ */
+function BuyBar({
+  ev,
+  open,
+  onOpenChange,
+  onBought,
+}: {
+  ev: EventItem
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onBought: (ids: string[], message: string, rareId: string | null) => void
+}) {
+  const { d, locale, common } = useApp()
+  const e = d.event
+  const state = useDemo() as DemoState
+  const now = useNow(60_000) ?? state.seededAt
+  if (now > ev.startsAt + 3 * 3_600_000) return null
+  const onSale = ev.tiers.filter((x) => available(x) > 0)
+  const from = onSale.length ? Math.min(...onSale.map((x) => x.price)) : null
+  return (
+    <>
+      <div
+        data-bottom-action=""
+        className="fixed inset-x-0 z-30 border-t bg-card/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/85 lg:hidden"
+        style={{ bottom: BOTTOM_NAV_H }}
+      >
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{ev.name}</p>
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {from === null ? e.tierSoldOut : t(d.boxOffice.from, { price: money(from, locale) })}
+            </p>
+          </div>
+          <Button className="h-12 shrink-0 px-6 text-base" onClick={() => onOpenChange(true)} disabled={from === null}>
+            <TicketIcon aria-hidden="true" />
+            {e.getTickets}
+          </Button>
+        </div>
+      </div>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" closeLabel={common.menuClose} className="max-h-[88dvh] overflow-y-auto rounded-t-xl p-0 pb-[env(safe-area-inset-bottom)]">
+          <SheetTitle className="sr-only">{e.tiersTitle}</SheetTitle>
+          <SheetDescription className="sr-only">{ev.name}</SheetDescription>
+          <Checkout ev={ev} onBought={onBought} bare />
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }
 
 function RulesCard({ ev, copy }: { ev: EventItem; copy: AppCopy }) {
   const { d, tk, locale } = copy
+  const foil = rareConfigOf(ev)
   const items = [
     { label: tk.cap, value: t(tk.capValue, { pct: percent(ev.rules.resaleCapPct, locale) }) },
     { label: tk.royalty, value: percent(ev.rules.royaltyPct, locale) },
     { label: tk.limit, value: t(tk.limitValue, { n: ev.rules.perWalletLimit }) },
     { label: tk.souvenir, value: ev.rules.souvenir ? tk.souvenirYes : tk.souvenirNo },
+    { label: tk.foilEdition, value: foil.enabled ? t(tk.foilEditionValue, { n: foil.edition, bonus: foil.capBonus }) : tk.foilNone },
   ]
   return (
     <section aria-labelledby="rules-h" className="rounded-lg border bg-card p-5">
@@ -119,7 +278,7 @@ function RulesCard({ ev, copy }: { ev: EventItem; copy: AppCopy }) {
         {d.event.rulesTitle}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">{d.event.rulesBody}</p>
-      <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
         {items.map((i) => (
           <div key={i.label} className="border-t-2 border-foreground pt-2 dark:border-primary">
             <dt className="text-xs text-muted-foreground">{i.label}</dt>
@@ -135,9 +294,18 @@ function RulesCard({ ev, copy }: { ev: EventItem; copy: AppCopy }) {
   )
 }
 
-function Checkout({ ev }: { ev: EventItem }) {
+function Checkout({
+  ev,
+  onBought,
+  bare,
+}: {
+  ev: EventItem
+  onBought: (ids: string[], message: string, rareId: string | null) => void
+  /** Inside the phone sheet: no card chrome. */
+  bare?: boolean
+}) {
   const copy = useApp()
-  const { d, locale, tk } = copy
+  const { d, locale } = copy
   const e = d.event
   const state = useDemo() as DemoState
   const connect = useConnect()
@@ -145,15 +313,6 @@ function Checkout({ ev }: { ev: EventItem }) {
   const [tierId, setTierId] = useState(firstOpen?.id ?? "")
   const [qty, setQty] = useState(1)
   const [flow, setFlow] = useState<FlowState>({ phase: "idle" })
-  const [mintedIds, setMintedIds] = useState<string[]>([])
-  /** A rare drop waiting to be revealed: the minted ticket stays hidden here until it's put away. */
-  const [drop, setDrop] = useState<string | null>(null)
-  const [justRevealed, setJustRevealed] = useState(false)
-  const [flipped, setFlipped] = useState(false)
-  const mintedRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (justRevealed) mintedRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" })
-  }, [justRevealed])
   const clockNow = useNow(60_000)
   const tier = tierOf(ev, tierId)
   const connected = state.wallet.status === "connected"
@@ -196,24 +355,20 @@ function Checkout({ ev }: { ev: EventItem }) {
       const serial = after?.tickets.find((x) => x.id === ids[0])?.serial ?? ""
       const message = ids.length > 1 ? t(e.successPlural, { n: ids.length }) : t(e.success, { serial })
       const rare = after?.tickets.find((x) => ids.includes(x.id) && x.rare)
-      setMintedIds(rare ? [rare.id, ...ids.filter((x) => x !== rare.id)] : ids)
-      setDrop(rare?.id ?? null)
-      setJustRevealed(false)
       setQty(1)
       setFlow({ phase: "done", tx: res.result?.tx, message })
       // A rare drop announces itself; the toast waits until it's put away.
       if (!rare) toast.success(message)
+      onBought(ids, message, rare?.id ?? null)
     } else {
       const s2 = getDemo()
       setFlow({ phase: "error", tx: res.result?.tx, message: errorText(copy, res.error, s2 ? varsFor(s2, ev, res.error, total) : {}) })
     }
   }
 
-  const minted = state.tickets.find((x) => x.id === mintedIds[0])
-
   return (
-    <section aria-labelledby="buy-h" className="paper-edge rounded-lg border bg-card">
-      <h2 id="buy-h" className="border-b px-5 py-4 font-display text-2xl font-extrabold uppercase">
+    <section aria-labelledby={bare ? undefined : "buy-h"} className={cn(!bare && "paper-edge rounded-lg border bg-card")}>
+      <h2 id={bare ? undefined : "buy-h"} className="border-b px-5 py-4 pr-12 font-display text-2xl font-extrabold uppercase">
         {e.tiersTitle}
       </h2>
       {past ? (
@@ -303,35 +458,6 @@ function Checkout({ ev }: { ev: EventItem }) {
           {tier && available(tier) === 0 && flow.phase === "idle" && <p className="text-sm font-medium text-destructive">{d.tx.errors.soldOut}</p>}
 
           <FlowFeedback state={shown} />
-          {flow.phase === "done" && minted && drop === minted.id && (
-            <RareDropReveal
-              key={minted.id}
-              ticket={minted}
-              onDone={() => {
-                setDrop(null)
-                setJustRevealed(true)
-                if (flow.phase === "done") toast.success(flow.message)
-              }}
-            />
-          )}
-          {flow.phase === "done" && minted && drop !== minted.id && (
-            <div ref={mintedRef} className={cn("space-y-3", justRevealed && "animate-in duration-500 fade-in-0 zoom-in-90")}>
-              <Ticket
-                {...ticketProps(state, minted, copy)}
-                compact
-                sweep={justRevealed}
-                flipped={flipped}
-                stamp={{ label: tk.stamps.minted, tone: "ink", animate: true }}
-              />
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                {minted.rare && <FlipButton flipped={flipped} onFlip={() => setFlipped((f) => !f)} labels={tk} />}
-                <Link href={href(locale, "/app/wallet")} className="inline-flex min-h-11 items-center gap-2 font-semibold underline-offset-4 hover:underline">
-                  {e.seeWallet}
-                  <ArrowRightIcon className="size-4" aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </section>

@@ -34,7 +34,7 @@ export function AppBar() {
   return (
     <div className="border-b bg-card">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <nav aria-label={d.roles.label} className="-mx-1 overflow-x-auto">
+        <nav aria-label={d.roles.label} className="-mx-1 overflow-x-auto max-lg:hidden">
           <ul className="flex min-w-max gap-1 px-1">
             {tabs.map((tab) => (
               <li key={tab.href}>
@@ -87,6 +87,44 @@ export function AppBar() {
         </div>
       </div>
       {!storageOk && <p className="border-t bg-muted px-4 py-2 text-center text-xs text-muted-foreground">{d.storageOff}</p>}
+      <BottomNav label={d.roles.label} tabs={tabs} />
     </div>
   )
 }
+
+/**
+ * Phones and tablets: the demo's sections as a bottom bar within thumb reach.
+ * Pages that need a primary action pin it just above (see BottomAction).
+ */
+function BottomNav({ label, tabs }: { label: string; tabs: { href: string; label: string; icon: React.ElementType; active: boolean }[] }) {
+  return (
+    <nav
+      aria-label={label}
+      data-bottom-nav=""
+      className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-card/85 lg:hidden"
+    >
+      <ul className="mx-auto grid h-16 max-w-xl grid-cols-4">
+        {tabs.map((tab) => (
+          <li key={tab.href} className="flex">
+            <Link
+              href={tab.href}
+              aria-current={tab.active ? "page" : undefined}
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center gap-1 text-[11px] leading-none font-semibold transition-colors",
+                tab.active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <span className={cn("flex h-7 w-12 items-center justify-center rounded-full transition-colors", tab.active && "bg-foreground text-background")}>
+                <tab.icon className="size-[18px]" aria-hidden="true" />
+              </span>
+              {tab.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+/** Height the bottom bar takes, for content padding and for actions pinned above it. */
+export const BOTTOM_NAV_H = "calc(4rem + env(safe-area-inset-bottom))"
