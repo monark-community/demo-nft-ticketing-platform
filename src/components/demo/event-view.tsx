@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/
 import { WalletAddress, WalletAvatar } from "@/components/ui/wallet"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
-import { available, buyCheck, buyPrimary, buyResale, capOf, eventById, heldFor, listingsFor, resaleCheck, royaltyOf, tierOf } from "@/lib/demo/ops"
+import { available, buyCheck, buyPrimary, buyResale, capOf, eventById, heldFor, listingsFor, rareConfigOf, resaleCheck, royaltyOf, tierOf } from "@/lib/demo/ops"
 import { NETWORK_FEE } from "@/lib/demo/seed"
 import { getDemo, useDemo } from "@/lib/demo/store"
 import type { DemoState, EventItem, Ticket as TicketItem, TxError } from "@/lib/demo/types"
@@ -264,11 +264,13 @@ function BuyBar({
 
 function RulesCard({ ev, copy }: { ev: EventItem; copy: AppCopy }) {
   const { d, tk, locale } = copy
+  const foil = rareConfigOf(ev)
   const items = [
     { label: tk.cap, value: t(tk.capValue, { pct: percent(ev.rules.resaleCapPct, locale) }) },
     { label: tk.royalty, value: percent(ev.rules.royaltyPct, locale) },
     { label: tk.limit, value: t(tk.limitValue, { n: ev.rules.perWalletLimit }) },
     { label: tk.souvenir, value: ev.rules.souvenir ? tk.souvenirYes : tk.souvenirNo },
+    { label: tk.foilEdition, value: foil.enabled ? t(tk.foilEditionValue, { n: foil.edition, bonus: foil.capBonus }) : tk.foilNone },
   ]
   return (
     <section aria-labelledby="rules-h" className="rounded-lg border bg-card p-5">
@@ -276,7 +278,7 @@ function RulesCard({ ev, copy }: { ev: EventItem; copy: AppCopy }) {
         {d.event.rulesTitle}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">{d.event.rulesBody}</p>
-      <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
         {items.map((i) => (
           <div key={i.label} className="border-t-2 border-foreground pt-2 dark:border-primary">
             <dt className="text-xs text-muted-foreground">{i.label}</dt>

@@ -11,10 +11,11 @@ import { Ticket } from "@/components/ticket/ticket"
 import { Button } from "@/components/ui/button"
 import { NftCard } from "@/components/ui/nft-card"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
-import { capOf, capPctOf, cancelListing, eventById, faceOf, faucet, listTicket, median, recentSales, royaltyOf, simulateBuyer, yourTickets } from "@/lib/demo/ops"
+import { capOf, capPctOf, cancelListing, eventById, faceOf, faucet, listTicket, median, recentSales, royaltyOf, simulateBuyer, soldTickets, yourTickets, type SoldTicket } from "@/lib/demo/ops"
 import { NETWORK_FEE } from "@/lib/demo/seed"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useNow } from "@/hooks/use-now"
@@ -38,6 +39,8 @@ export function WalletView() {
   const connect = useConnect()
   const [notice, setNotice] = useState<FlowState>({ phase: "idle" })
   const [faucetFlow, setFaucetFlow] = useState<FlowState>({ phase: "idle" })
+  /** Used and sold tickets stay in the inventory, filtered out of the default view. */
+  const [view, setView] = useState<"active" | "used" | "sold">("active")
 
   if (!state) return <div className="h-[60vh] animate-pulse rounded-lg bg-muted" aria-busy="true" aria-label={d.loading} />
 
@@ -55,11 +58,12 @@ export function WalletView() {
       </div>
     )
 
-  const tickets = yourTickets(state).sort((a, b) => {
-    const ea = eventById(state, a.eventId)?.startsAt ?? 0
-    const eb = eventById(state, b.eventId)?.startsAt ?? 0
-    return (a.status === "used" ? 1 : 0) - (b.status === "used" ? 1 : 0) || ea - eb
-  })
+  const byShow = (a: TicketT, b: TicketT) => (eventById(state, a.eventId)?.startsAt ?? 0) - (eventById(state, b.eventId)?.startsAt ?? 0)
+  const mine = yourTickets(state)
+  const active = mine.filter((x) => x.status !== "used").sort(byShow)
+  const used = mine.filter((x) => x.status === "used").sort((a, b) => (b.usedAt ?? 0) - (a.usedAt ?? 0))
+  const sold = soldTickets(state)
+  const f = w.filters
 
   async function getFunds() {
     setFaucetFlow({ phase: "pending" })
@@ -99,11 +103,30 @@ export function WalletView() {
 
       <FlowFeedback state={notice} />
 
+      <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} asChild>
       <section aria-labelledby="tickets-h">
-        <h2 id="tickets-h" className="font-display text-3xl font-extrabold uppercase">
-          {w.upcoming}
-        </h2>
-        {tickets.length === 0 ? (
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+          <h2 id="tickets-h" className="font-display text-3xl font-extrabold uppercase">
+            {w.upcoming}
+          </h2>
+          <TabsList aria-label={f.label} className="h-11 pointer-coarse:h-12">
+            {(
+              [
+                ["active", f.active, active.length],
+                ["used", f.used, used.length],
+                ["sold", f.sold, sold.length],
+              ] as const
+            ).map(([key, label, n]) => (
+              <TabsTrigger key={key} value={key} className="h-9 gap-1.5 px-3.5 font-semibold pointer-coarse:h-10">
+                {label}
+                <span className="tabular-nums opacity-60">{n}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+
+        <TabsContent value="active" className="mt-0">
+        {active.length === 0 ? (
           <div className="mt-4 flex flex-col items-center rounded-lg border border-dashed px-6 py-14 text-center">
             <TicketIcon className="size-8 text-muted-foreground" aria-hidden="true" />
             <p className="mt-4 text-lg font-semibold">{w.emptyTitle}</p>
@@ -114,18 +137,71 @@ export function WalletView() {
           </div>
         ) : (
           <ul className="mt-5 grid gap-10 xl:grid-cols-2">
-            {tickets.map((tkt) => (
+            {active.map((tkt) => (
               <li key={tkt.id}>
                 <TicketItem ticket={tkt} state={state} onSold={setNotice} />
               </li>
             ))}
           </ul>
         )}
+        </TabsContent>
+
+        <TabsContent value="used" className="mt-0">
+          {used.length === 0 ? (
+            <p className="mt-5 rounded-lg border border-dashed px-5 py-10 text-center text-sm text-muted-foreground">{f.usedEmpty}</p>
+          ) : (
+            <ul className="mt-5 grid gap-10 xl:grid-cols-2">
+              {used.map((tkt) => (
+                <li key={tkt.id}>
+                  <TicketItem ticket={tkt} state={state} onSold={setNotice} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+
+        <TabsContent value="sold" className="mt-0">
+          {sold.length === 0 ? (
+            <p className="mt-5 rounded-lg border border-dashed px-5 py-10 text-center text-sm text-muted-foreground">{f.soldEmpty}</p>
+          ) : (
+            <ul className="mt-5 grid gap-10 xl:grid-cols-2">
+              {sold.map((x) => (
+                <li key={x.ticket.id}>
+                  <SoldItem sale={x} state={state} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
       </section>
+      </Tabs>
 
       <Souvenirs state={state} />
       <Activity state={state} />
     </div>
+  )
+}
+
+/** A ticket you resold: kept for the record, greyed, with what it sold for and what reached you. */
+function SoldItem({ sale, state }: { sale: SoldTicket; state: DemoState }) {
+  const copy = useApp()
+  const { d, locale, tk } = copy
+  const f = d.walletView.filters
+  const now = useNow(60_000) ?? state.seededAt
+  const [flipped, setFlipped] = useState(false)
+  const ev = eventById(state, sale.ticket.eventId)
+  if (!ev) return null
+  return (
+    <article aria-label={`${ev.name} · ${tk.serial} ${sale.ticket.serial} · ${tk.stamps.sold}`} className="space-y-3">
+      <Ticket {...ticketProps(state, sale.ticket, copy)} dimmed flipped={flipped} stamp={{ label: tk.stamps.sold, tone: "ink" }} />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {sale.ticket.rare && <FlipButton flipped={flipped} onFlip={() => setFlipped((v) => !v)} labels={tk} />}
+        <div className="text-sm">
+          <p className="font-semibold tabular-nums">{t(f.soldFor, { price: money(sale.price, locale), ago: ago(sale.at, now, locale) })}</p>
+          <p className="text-muted-foreground tabular-nums">{t(f.received, { amount: money(sale.proceeds, locale) })}</p>
+        </div>
+      </div>
+    </article>
   )
 }
 

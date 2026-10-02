@@ -16,9 +16,9 @@ This repository is the **interactive demo** of NFTokenPass, an independent ticke
 |-|-|
 | Buy a ticket (with per-wallet limit, sold-out tiers, rejected and failed transactions) | `/app`, `/app/events/[id]` |
 | Open a rare drop: every purchase in the demo drops a numbered foil ticket in one of six random artworks, revealed in a popup, that tilts and catches the light under your pointer. Foil raises the resale cap by 25 points and comes with perks (early entry plus one per artwork) | `/app/events/[id]`, `/app/wallet` |
-| Resell within the organizer's cap, watch the royalty split, try to list above the cap | `/app/wallet` |
+| Resell within the organizer's cap from a modal beside the ticket, with recent sales of the same tier; watch the royalty split, try to list above the cap; find used and sold tickets under their own tabs | `/app/wallet` |
 | Show the rotating entry code, then scan guests at the door (admitted, expired screenshot, already used, wrong event, not the holder, forged) | `/app/wallet`, `/app/door` |
-| Create an event with tiers and rules, and follow sales and resale royalties | `/app/organizer` |
+| Create an event with tiers, rules and an optional foil edition (size, drop chance, cap bonus, perks), and follow sales, foils dropped and resale royalties | `/app/organizer` |
 
 The site is bilingual (`/en/…`, `/fr/…`; `/` redirects by `Accept-Language`) and has light and dark themes.
 
@@ -52,7 +52,7 @@ All demo logic lives behind a small typed layer in `src/lib/demo/`, so it could 
 | `seed.ts` | The starting world: six invented shows in Montréal and Québec City, dated relative to now (one is always tonight), a demo wallet with 250.00 tUSDC and three tickets, resale listings, and guests queuing at tonight's door. |
 | `store.ts` | An external store persisted to `localStorage` (every access in try/catch), plus the promise behind the simulated wallet prompt. |
 | `chain.ts` | Every write: wallet prompt → pending with a hash and 1.2–2.6 s latency → confirmed or failed. Honours the demo controls (fail the next transaction, slow network). |
-| `ops.ts` | The rules: buying within supply and the per-wallet limit, rare foil drops (`RARE_ODDS`, `RARE_EDITION`, `RARE_CAP_BONUS` and `RARE_PERKS` in `seed.ts`; the demo sets the odds to 1), listing at or under the cap, royalty on every resale, deploying events, door check-in and souvenirs. |
+| `ops.ts` | The rules: buying within supply and the per-wallet limit, rare foil drops (each show's `RareConfig`, set by its organizer; seeded shows use `RARE_ODDS`, `RARE_EDITION`, `RARE_CAP_BONUS` and `RARE_PERKS` in `seed.ts`, with the odds at 1), listing at or under the cap, royalty on every resale, deploying events, door check-in and souvenirs. |
 | `code.ts` | Rotating entry codes: a signature over ticket, holder and 20-second window, and the door's verification (expired, used, wrong event, not the holder, forged). |
 
 The "Demo controls" button in the app bar can force the next transaction to fail, slow the network, or **reset the demo**. State older than 12 hours is reseeded so "tonight" stays tonight.

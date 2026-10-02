@@ -109,7 +109,7 @@ export function RareDropReveal({ ticket, onDone }: { ticket: TicketItem; onDone:
             </span>
           </DialogDescription>
           <ul aria-label={copy.tk.perks} className={cn("mt-3 flex flex-wrap justify-center gap-2", !revealed && "invisible")}>
-            {perksOf(ticket).map((p, i) => (
+            {perksOf(ticket, ev).map((p, i) => (
               <li
                 key={p}
                 style={delay(450 + i * 120)}

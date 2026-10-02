@@ -1,10 +1,11 @@
 "use client"
 
-import { ArrowRightIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { ArrowRightIcon, PlusIcon, SparklesIcon, Trash2Icon } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { rareArt } from "@/components/ticket/rare-art"
 import { Ticket } from "@/components/ticket/ticket"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,7 +16,7 @@ import { t } from "@/i18n/t"
 import { deployEvent, type EventDraft } from "@/lib/demo/ops"
 import { NETWORK_FEE } from "@/lib/demo/seed"
 import { useDemo } from "@/lib/demo/store"
-import type { Category, PosterTone } from "@/lib/demo/types"
+import type { Category, PosterTone, RarePerk } from "@/lib/demo/types"
 import { clock, eventDate, money, percent } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -39,7 +40,9 @@ interface TierRow {
   supply: string
 }
 
-type Errors = Partial<Record<"name" | "venue" | "city" | "date" | "tiers", string>>
+type Errors = Partial<Record<"name" | "venue" | "city" | "date" | "tiers" | "foil", string>>
+
+const PERKS: RarePerk[] = ["earlyEntry", "merch", "soundcheck", "lounge", "poster", "afterparty"]
 
 export function CreateEvent({ onClose }: { onClose: () => void }) {
   const copy = useApp()
@@ -60,6 +63,12 @@ export function CreateEvent({ onClose }: { onClose: () => void }) {
   const [royalty, setRoyalty] = useState(5)
   const [limit, setLimit] = useState(4)
   const [souvenir, setSouvenir] = useState(true)
+  const [foilOn, setFoilOn] = useState(true)
+  const [foilSize, setFoilSize] = useState(50)
+  const [foilOdds, setFoilOdds] = useState(100)
+  const [foilBonus, setFoilBonus] = useState(25)
+  const [foilPerks, setFoilPerks] = useState<RarePerk[]>(["earlyEntry", "merch"])
+  const [previewFoil, setPreviewFoil] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [flow, setFlow] = useState<FlowState>({ phase: "idle" })
   const [createdId, setCreatedId] = useState<string | null>(null)
@@ -79,6 +88,7 @@ export function CreateEvent({ onClose }: { onClose: () => void }) {
       else if (!Number.isFinite(p) || p < 0 || p > 10_000) e.tiers = f.errors.tierPrice
       else if (!Number.isInteger(s) || s < 1 || s > 50_000) e.tiers = f.errors.tierSupply
     }
+    if (foilOn && foilPerks.length === 0) e.foil = f.foilPerksNone
     return e
   }
 
@@ -107,6 +117,7 @@ export function CreateEvent({ onClose }: { onClose: () => void }) {
       tone,
       tiers: tiers.map((r) => ({ name: r.name, price: Math.round(Number(r.price.replace(",", ".")) * 100), supply: Number(r.supply) })),
       rules: { resaleCapPct: cap, royaltyPct: royalty, perWalletLimit: limit, souvenir },
+      rare: { enabled: foilOn, edition: foilSize, oddsPct: foilOdds, capBonus: foilBonus, perks: foilPerks },
     }
     setFlow({ phase: "pending" })
     const res = await deployEvent(draft, {
@@ -119,6 +130,10 @@ export function CreateEvent({ onClose }: { onClose: () => void }) {
         {
           label: f.promptRules,
           value: `${tk.cap} ${percent(cap, locale)} · ${tk.royalty} ${percent(royalty, locale)} · ${t(tk.limitValue, { n: limit })}`,
+        },
+        {
+          label: f.promptFoil,
+          value: foilOn ? t(f.promptFoilValue, { n: foilSize, odds: percent(foilOdds, locale), bonus: foilBonus }) : tk.foilNone,
         },
         { label: d.prompt.fee, value: money(NETWORK_FEE, locale), strong: true },
       ],
@@ -259,11 +274,123 @@ export function CreateEvent({ onClose }: { onClose: () => void }) {
               <Switch id="r-souv" checked={souvenir} onCheckedChange={setSouvenir} />
             </div>
           </fieldset>
+
+          <fieldset className="space-y-5" disabled={busy || !!createdId} aria-describedby="foil-intro">
+            <legend className="label-caps mb-1 inline-flex items-center gap-1.5 text-muted-foreground">
+              <SparklesIcon className="size-3.5" aria-hidden="true" />
+              {f.foil}
+            </legend>
+            <p id="foil-intro" className="text-sm text-muted-foreground">
+              {f.foilIntro}
+            </p>
+            <div className="flex items-start justify-between gap-4">
+              <Label htmlFor="r-foil" className="text-sm font-semibold">
+                {f.foilOn}
+              </Label>
+              <Switch
+                id="r-foil"
+                checked={foilOn}
+                onCheckedChange={(on) => {
+                  setFoilOn(on)
+                  if (!on) setPreviewFoil(false)
+                }}
+              />
+            </div>
+            {foilOn && (
+              <>
+                <RangeRow id="r-foil-size" label={f.foilSize} min={10} max={200} step={10} value={foilSize} onChange={setFoilSize} display={String(foilSize)} />
+                <div className="space-y-1">
+                  <RangeRow id="r-foil-odds" label={f.foilOdds} min={5} max={100} step={5} value={foilOdds} onChange={setFoilOdds} display={percent(foilOdds, locale)} />
+                  <p className="text-xs text-muted-foreground">{f.foilOddsHint}</p>
+                </div>
+                <RangeRow
+                  id="r-foil-bonus"
+                  label={f.foilBonus}
+                  min={0}
+                  max={50}
+                  step={5}
+                  value={foilBonus}
+                  onChange={setFoilBonus}
+                  display={t(f.foilBonusValue, { n: foilBonus, pct: percent(cap + foilBonus, locale) })}
+                />
+                <div role="group" aria-labelledby="foil-perks-l" aria-describedby={errors.foil ? "foil-perks-err" : undefined} className="space-y-2">
+                  <p id="foil-perks-l" className="text-sm font-semibold">
+                    {f.foilPerks}
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {PERKS.map((perk) => {
+                      const on = foilPerks.includes(perk)
+                      return (
+                        <label
+                          key={perk}
+                          className={cn(
+                            "flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 text-sm font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring",
+                            on ? "border-foreground dark:border-primary" : "border-input text-muted-foreground"
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={() => setFoilPerks((ps) => (on ? ps.filter((x) => x !== perk) : PERKS.filter((x) => x === perk || ps.includes(x))))}
+                            className="size-4 accent-[var(--foreground)] dark:accent-[var(--primary)]"
+                          />
+                          {tk.rarePerks[perk]}
+                        </label>
+                      )
+                    })}
+                  </div>
+                  {errors.foil && (
+                    <p id="foil-perks-err" role="alert" className="text-sm font-medium text-destructive">
+                      {errors.foil}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </fieldset>
         </div>
 
         <div className="space-y-5 xl:sticky xl:top-24 xl:self-start">
-          <p className="label-caps text-muted-foreground">{f.preview}</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="label-caps text-muted-foreground">{f.preview}</p>
+            {foilOn && (
+              <div role="radiogroup" aria-label={f.previewAs} className="inline-flex rounded-md bg-muted p-1">
+                {(
+                  [
+                    [false, f.previewStandard],
+                    [true, f.previewFoil],
+                  ] as const
+                ).map(([foil, label]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    role="radio"
+                    aria-checked={previewFoil === foil}
+                    onClick={() => setPreviewFoil(foil)}
+                    className={cn(
+                      "inline-flex h-9 items-center gap-1.5 rounded-sm px-3 text-sm font-semibold pointer-coarse:h-10",
+                      previewFoil === foil ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                  >
+                    {foil && <SparklesIcon className="size-3.5" aria-hidden="true" />}
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Ticket
+            rare={
+              foilOn && previewFoil
+                ? {
+                    ...rareArt("aurora"),
+                    pattern: "waves",
+                    label: t(tk.rare, { n: 1, of: foilSize }),
+                    perks: foilPerks.map((x) => tk.rarePerks[x]),
+                    perksLabel: tk.perks,
+                  }
+                : undefined
+            }
             eventName={name || f.namePlaceholder}
             tagline={tagline || undefined}
             venue={`${venue}${city ? `, ${city}` : ""}`}
@@ -274,7 +401,7 @@ export function CreateEvent({ onClose }: { onClose: () => void }) {
             serial="0001"
             labels={tk}
             rules={{
-              cap: t(tk.capValue, { pct: percent(cap, locale) }),
+              cap: t(tk.capValue, { pct: percent(cap + (foilOn && previewFoil ? foilBonus : 0), locale) }),
               royalty: percent(royalty, locale),
               limit: t(tk.limitValue, { n: limit }),
               souvenir: souvenir ? tk.souvenirYes : tk.souvenirNo,
