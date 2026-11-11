@@ -24,7 +24,7 @@ The site is bilingual (`/en/…`, `/fr/…`; `/` redirects by `Accept-Language`)
 
 ## Run it locally
 
-Requirements: Node.js 22 and pnpm 10.
+Requirements: Node.js 22.23.4 or newer on the 22 line and pnpm 10.
 
 ```bash
 pnpm install
@@ -76,7 +76,7 @@ UI is built on shadcn/ui with the [Monark UI registry](https://ui.monark.io) (`w
 
 ## Deploy to Vercel
 
-Import the repository in Vercel and keep the framework defaults (Next.js, `pnpm install`, `pnpm build`). No environment variables are needed. Optionally set `NEXT_PUBLIC_SITE_URL` if the site is served from a host other than `https://nftokenpass.monark.io` (used for canonical URLs, the sitemap and Open Graph).
+Import the repository in Vercel and keep the framework defaults (Next.js, `pnpm install`, `pnpm build`). `pnpm build` and `pnpm start` stop on a Node.js release exposed to CVE-2026-111497. No environment variables are needed. Optionally set `NEXT_PUBLIC_SITE_URL` if the site is served from a host other than `https://nftokenpass.monark.io` (used for canonical URLs, the sitemap and Open Graph).
 
 ## Notes
 
