@@ -5,7 +5,9 @@
   "description": "NFTokenPass: event tickets as tokens with capped resale, organizer royalties and a rotating entry code (simulated testnet demo).",
   "scripts": {
     "dev": "next dev --port 3149",
+    "prebuild": "node scripts/check-node.mjs",
     "build": "next build",
+    "prestart": "node scripts/check-node.mjs",
     "start": "next start --port 3149",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
